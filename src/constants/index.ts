@@ -5,6 +5,7 @@ export const PAGES: Record<GamePage, { title: string; subtitle: string }> = {
   worry: { title: '漂流瓶的烦恼信', subtitle: '写给大海的漂流瓶信笺' },
   voyage: { title: '迷雾航线中…', subtitle: '航向未知：航平的小船与突袭的黑雾' },
   analysis: { title: '岛屿心理档案室', subtitle: '傅达的岛屿心理特展厅' },
+  gamescreen: { title: '心灵岛屿', subtitle: '你的心灵冒险' },
   battle: { title: '心灵守护大作战', subtitle: '无人岛广场的心灵大扫除' },
   tasks: { title: '拓荒日志与成长主页', subtitle: '集里游+：岛屿日常治愈日志' },
   minigames: { title: '静心小憩营地', subtitle: '星空下的露营篝火' },

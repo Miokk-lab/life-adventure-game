@@ -15,6 +15,7 @@ export type GamePage =
   | 'worry'
   | 'voyage'
   | 'analysis'
+  | 'gamescreen'
   | 'battle'
   | 'tasks'
   | 'minigames'

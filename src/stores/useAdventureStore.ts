@@ -22,6 +22,13 @@ interface AdventureState {
   collection: string[];
   companions: Companion[];
   gallery: GalleryItem[];
+  weeklyProgress: {
+    weekStartDate: string;
+    tasksCompletedThisWeek: number;
+    weeklyTarget: number;
+    shellsEarnedThisWeek: number;
+    weeklyBonusClaimed: boolean;
+  };
 
   setAdventureData: (data: {
     adventureId?: string;
@@ -43,6 +50,7 @@ interface AdventureState {
   setChapter: (ch: number) => void;
   addToCollection: (itemId: string) => void;
   updateCompanionBond: (animal: Companion['animal'], delta: number) => void;
+  incrementWeeklyTask: () => void;
   reset: () => void;
 }
 
@@ -64,6 +72,13 @@ const initialState = {
   collection: [],
   companions: [],
   gallery: [],
+  weeklyProgress: {
+    weekStartDate: new Date().toISOString().split('T')[0],
+    tasksCompletedThisWeek: 0,
+    weeklyTarget: 7,
+    shellsEarnedThisWeek: 0,
+    weeklyBonusClaimed: false,
+  },
 };
 
 export const useAdventureStore = create<AdventureState>((set, get) => ({
@@ -133,6 +148,15 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
       companions: s.companions.map((c) =>
         c.animal === animal ? { ...c, bondLevel: Math.min(3, c.bondLevel + delta) } : c,
       ),
+    })),
+
+  incrementWeeklyTask: () =>
+    set((s) => ({
+      weeklyProgress: {
+        ...s.weeklyProgress,
+        tasksCompletedThisWeek: s.weeklyProgress.tasksCompletedThisWeek + 1,
+        shellsEarnedThisWeek: s.weeklyProgress.shellsEarnedThisWeek + 5,
+      },
     })),
 
   reset: () => set(initialState),

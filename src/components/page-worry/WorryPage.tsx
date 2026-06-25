@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
 import { Button, Card, Footer, Radio } from 'animal-island-ui';
 import { motion } from 'motion/react';
-import GameLayout from '../shared/GameLayout';
 import { worryTypeList } from '../../constants/worryTypes';
 import { MAX_WORRY_LENGTH } from '../../constants';
 import type { WorryCategory } from '../../types';
@@ -26,8 +25,6 @@ export default function WorryPage() {
     setIsSubmitting(true);
     setWorryText(text.trim());
     setWorryType(category);
-
-    // Bottle throw animation → navigate
     setTimeout(() => {
       setIsSubmitting(false);
       navigateTo('voyage');
@@ -35,83 +32,46 @@ export default function WorryPage() {
   };
 
   return (
-    <GameLayout>
-      <div className="max-w-2xl mx-auto">
-        {/* Parchment text area */}
-        <Card type="dashed" className="mb-6">
-          <div
-            className="text-center mb-4 p-3 rounded-2xl"
-            style={{ background: 'rgba(25,200,185,0.08)' }}
-          >
-            <h2 className="text-lg font-extrabold" style={{ color: '#725d42' }}>
-              📜 写给大海的漂流瓶信笺
-            </h2>
-            <p className="text-xs mt-1" style={{ color: '#9f927d' }}>
-              将你的烦恼装进瓶子，抛向大海…
-            </p>
-          </div>
-
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value.slice(0, MAX_WORRY_LENGTH))}
-            placeholder="写下你的烦恼…（例如：工作压力太大，每天加班到深夜…）"
-            rows={6}
-            className="w-full p-4 rounded-2xl border-2 resize-none text-sm leading-relaxed"
-            style={{
-              borderColor: '#e8dcc8',
-              background: '#fdfaf3',
-              color: '#725d42',
-              fontFamily: '"Nunito", "Noto Sans SC", sans-serif',
-            }}
-          />
-
-          <div className="flex justify-between items-center mt-2">
-            <button
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all hover:bg-[#e6f9f6]"
-              style={{ borderColor: '#e8e2d6', color: '#9f927d' }}
-              title="语音输入"
-            >
-              🎙️ 语音
-            </button>
-            <span className="text-xs font-semibold" style={{ color: text.length >= MAX_WORRY_LENGTH ? '#e05a5a' : '#c4b89e' }}>
-              {text.length}/{MAX_WORRY_LENGTH}
-            </span>
-          </div>
-        </Card>
-
-        {/* Category stamps */}
-        <Card color="app-yellow" className="mb-6">
-          <h3 className="text-sm font-extrabold mb-3" style={{ color: '#725d42' }}>
-            🏷️ 选择烦恼分类邮票
-          </h3>
-          <Radio
-            options={radioOptions}
-            value={category}
-            onChange={(v) => setCategory(v as WorryCategory)}
-            direction="vertical"
-            size="large"
-          />
-        </Card>
-
-        {/* Submit */}
-        <div className="text-center">
-          <motion.div
-            animate={isSubmitting ? { scale: 0.8, opacity: 0.5, y: 40 } : { scale: 1, opacity: 1, y: 0 }}
-          >
-            <Button
-              type="primary"
-              size="large"
-              onClick={handleSubmit}
-              disabled={!text.trim() || isSubmitting}
-            >
-              🍾 装瓶，抛向大海！
-            </Button>
-          </motion.div>
+    <div className="max-w-2xl mx-auto px-4 py-6">
+      {/* Parchment text area */}
+      <Card type="dashed" className="mb-6">
+        <div className="text-center mb-4 p-3 rounded-2xl" style={{ background: 'rgba(25,200,185,0.08)' }}>
+          <h2 className="text-lg font-extrabold" style={{ color: '#725d42' }}>📜 写给大海的漂流瓶信笺</h2>
+          <p className="text-xs mt-1" style={{ color: '#9f927d' }}>将你的烦恼装进瓶子，抛向大海…</p>
         </div>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value.slice(0, MAX_WORRY_LENGTH))}
+          placeholder="写下你的烦恼…（例如：工作压力太大，每天加班到深夜…）"
+          rows={6}
+          className="w-full p-4 rounded-2xl border-2 resize-none text-sm leading-relaxed"
+          style={{ borderColor: '#e8dcc8', background: '#fdfaf3', color: '#725d42', fontFamily: '"Nunito", "Noto Sans SC", sans-serif' }}
+        />
+        <div className="flex justify-between items-center mt-2">
+          <button className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all hover:bg-[#e6f9f6]"
+            style={{ borderColor: '#e8e2d6', color: '#9f927d' }}>🎙️ 语音</button>
+          <span className="text-xs font-semibold" style={{ color: text.length >= MAX_WORRY_LENGTH ? '#e05a5a' : '#c4b89e' }}>
+            {text.length}/{MAX_WORRY_LENGTH}
+          </span>
+        </div>
+      </Card>
 
-        {/* Sea Footer — design doc requirement */}
-        <Footer type="sea" />
+      {/* Category stamps */}
+      <Card color="app-yellow" className="mb-6">
+        <h3 className="text-sm font-extrabold mb-3" style={{ color: '#725d42' }}>🏷️ 选择烦恼分类邮票</h3>
+        <Radio options={radioOptions} value={category} onChange={(v) => setCategory(v as WorryCategory)} direction="vertical" size="large" />
+      </Card>
+
+      {/* Submit */}
+      <div className="text-center mb-8">
+        <motion.div animate={isSubmitting ? { scale: 0.8, opacity: 0.5, y: 40 } : { scale: 1, opacity: 1, y: 0 }}>
+          <Button type="primary" size="large" onClick={handleSubmit} disabled={!text.trim() || isSubmitting}>
+            🍾 装瓶，抛向大海！
+          </Button>
+        </motion.div>
       </div>
-    </GameLayout>
+
+      <Footer type="sea" />
+    </div>
   );
 }

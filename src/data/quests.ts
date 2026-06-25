@@ -101,10 +101,26 @@ const TASK_TEMPLATES: Record<string, { type: string; descriptions: string[]; tar
 
 const TYPE_KEYS = Object.keys(TASK_TEMPLATES);
 
+function getDateSeed(): number {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
+function seededRandom(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
 export function generateDailyTasks(_worryType: WorryCategory, _chapter: number): DailyTask[] {
-  // Shuffle and pick 6 tasks
-  const shuffled = [...TYPE_KEYS].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 6).map((key, i) => {
+  const seed = getDateSeed();
+  const rand = seededRandom(seed);
+  // Pick 3-5 random tasks, same all day, different each day
+  const count = 3 + Math.floor(rand() * 3); // 3, 4, or 5
+  const shuffled = [...TYPE_KEYS].sort(() => rand() - 0.5);
+  return shuffled.slice(0, count).map((key, i) => {
     const tmpl = TASK_TEMPLATES[key];
     const descIdx = i % tmpl.descriptions.length;
     return {

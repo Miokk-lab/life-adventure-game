@@ -2,39 +2,56 @@ import React from 'react';
 import { useGameStore } from './stores/useGameStore';
 import { Cursor } from 'animal-island-ui';
 import { AnimatePresence } from 'motion/react';
+import AppLayout from './components/layout/AppLayout';
 import LoginPage from './components/page-login/LoginPage';
 import WorryPage from './components/page-worry/WorryPage';
 import VoyagePage from './components/page-voyage/VoyagePage';
 import AnalysisPage from './components/page-analysis/AnalysisPage';
-import BattlePage from './components/page-battle/BattlePage';
-import TasksPage from './components/page-tasks/TasksPage';
-import MiniGamesPage from './components/page-minigames/MiniGamesPage';
-import TeaShopPage from './components/page-teashop/TeaShopPage';
+import GameScreen from './components/game/GameScreen';
 import VictoryPage from './components/page-victory/VictoryPage';
 
-const PAGES: Record<string, React.ComponentType> = {
+const TOP_LEVEL_PAGES: Record<string, React.ComponentType> = {
   login: LoginPage,
   worry: WorryPage,
   voyage: VoyagePage,
   analysis: AnalysisPage,
-  battle: BattlePage,
-  tasks: TasksPage,
-  minigames: MiniGamesPage,
-  teashop: TeaShopPage,
+  gamescreen: GameScreen,
   victory: VictoryPage,
 };
 
+// Pages that get the AppLayout wrapper (top bar + background)
+const LAYOUT_PAGES = new Set(['worry', 'voyage', 'analysis', 'victory']);
+
 export default function App() {
   const currentPage = useGameStore((s) => s.currentPage);
-  const PageComponent = PAGES[currentPage];
+  const PageComponent = TOP_LEVEL_PAGES[currentPage];
 
+  if (!PageComponent) return null;
+
+  // GameScreen handles its own layout internally (with sidebar)
+  if (currentPage === 'gamescreen') {
+    return (
+      <Cursor>
+        <PageComponent />
+      </Cursor>
+    );
+  }
+
+  // Login page: no top bar
+  if (currentPage === 'login') {
+    return (
+      <Cursor>
+        <PageComponent />
+      </Cursor>
+    );
+  }
+
+  // All other pages: wrapped in AppLayout with top bar
   return (
     <Cursor>
-      <div className="min-h-screen bg-[#f8f8f0]">
-        <AnimatePresence mode="wait">
-          {PageComponent && <PageComponent key={currentPage} />}
-        </AnimatePresence>
-      </div>
+      <AppLayout showTopBar>
+        <PageComponent />
+      </AppLayout>
     </Cursor>
   );
 }
