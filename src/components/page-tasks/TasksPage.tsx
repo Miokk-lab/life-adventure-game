@@ -59,7 +59,7 @@ export default function TasksPage() {
           <h3 className="text-sm font-extrabold" style={{ color: '#fff9e3' }}>⭐ 岛民等级</h3>
           <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.3)', color: '#fff9e3' }}>Lv.{chapter}</span>
         </div>
-        <ProgressBar value={exp} max={chapter===3?300:chapter===2?200:100} colorClass="bar-exp" label="EXP" />
+        <ProgressBar value={exp} max={chapter>=3?200:chapter>=2?100:50} colorClass="bar-exp" label="EXP" />
       </Card>
 
       {/* Tasks */}

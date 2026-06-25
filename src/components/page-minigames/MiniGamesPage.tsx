@@ -12,6 +12,7 @@ import AutoTimer from '../templates/AutoTimer';
 import CloudMiniGame from '../minigames/CloudMiniGame';
 import ShellCollectGame from '../minigames/ShellCollectGame';
 import { getWorryContent } from '../../data/worryContent';
+import { MINIGAME_HP_RESTORE, MINIGAME_EXP, MINIGAME_COINS, MINIGAME_STAMINA_COST } from '../../constants';
 
 const TEMPLATE_MAP: Record<string, React.ComponentType<any>> = {
   breathing: BreathingCircle,
@@ -28,6 +29,7 @@ export default function MiniGamesPage() {
   const restoreHp = useAdventureStore((s) => s.restoreHp);
   const consumeStamina = useAdventureStore((s) => s.consumeStamina);
   const addExp = useAdventureStore((s) => s.addExp);
+  const addCoins = useAdventureStore((s) => s.addCoins);
   const stamina = useAdventureStore((s) => s.stamina);
   const worryType = useGameStore((s) => s.worryType);
   const [active, setActive] = useState<{ type: string; title: string; desc: string } | null>(null);
@@ -35,8 +37,8 @@ export default function MiniGamesPage() {
   const worryContent = getWorryContent(worryType ?? 'emotion_management');
   const games = worryContent.miniGames.map((g, i) => ({
     ...g,
-    hpRestore: 20,
-    staminaCost: g.id === 'shell_collect' ? 5 : 0,
+    hpRestore: MINIGAME_HP_RESTORE,
+    staminaCost: MINIGAME_STAMINA_COST,
     template: ['breathing','sorting','cloud','shell_collect','writing','movement'][i % 6],
   }));
 
@@ -47,8 +49,9 @@ export default function MiniGamesPage() {
   };
 
   const handleComplete = (game: typeof games[number]) => {
-    restoreHp(game.hpRestore);
-    addExp(15);
+    restoreHp(MINIGAME_HP_RESTORE);
+    addExp(MINIGAME_EXP);
+    addCoins(MINIGAME_COINS);
     setActive(null);
   };
 

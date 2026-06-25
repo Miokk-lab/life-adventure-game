@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { HeroData, MonsterData, Companion, GalleryItem, DailyTask } from '../types';
-import { INITIAL_STAMINA, INITIAL_COINS, INITIAL_HP, INITIAL_MP } from '../constants';
+import { INITIAL_STAMINA, INITIAL_COINS, INITIAL_HP, INITIAL_MP, TASK_MP_RESTORE, TASK_EXP, TASK_COINS, TASK_STAMINA_COST, EXP_L1, EXP_L2 } from '../constants';
 
 interface AdventureState {
   adventureId: string | null;
@@ -108,14 +108,14 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
   completeTask: (taskId) =>
     set((s) => {
       const task = s.tasks.find((t) => t.id === taskId);
-      if (!task || task.completed || s.stamina < 10) return s;
-      const reward = task.reward;
+      if (!task || s.stamina < TASK_STAMINA_COST) return s;
+      const wasCompleted = task.completed;
       return {
         tasks: s.tasks.map((t) => (t.id === taskId ? { ...t, completed: true, progress: t.target } : t)),
-        exp: s.exp + (reward.exp ?? 0),
-        coins: s.coins + 20,
-        mp: Math.min(s.maxMp, s.mp + 5),
-        stamina: s.stamina - 10,
+        exp: s.exp + TASK_EXP,
+        coins: s.coins + TASK_COINS,
+        mp: Math.min(s.maxMp, s.mp + TASK_MP_RESTORE),
+        stamina: s.stamina - TASK_STAMINA_COST,
       };
     }),
 
@@ -147,8 +147,8 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
     set((s) => {
       const newExp = s.exp + amount;
       let chapter = s.chapter;
-      if (newExp >= 200 && chapter < 3) chapter = 3;
-      else if (newExp >= 100 && chapter < 2) chapter = 2;
+      if (newExp >= EXP_L2 && chapter < 3) chapter = 3;
+      else if (newExp >= EXP_L1 && chapter < 2) chapter = 2;
       return { exp: newExp, chapter };
     }),
 

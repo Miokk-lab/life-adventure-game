@@ -28,6 +28,7 @@ export default function BattlePage() {
   const updateHp = useAdventureStore((s) => s.updateHp);
   const updateMp = useAdventureStore((s) => s.updateMp);
   const addCoins = useAdventureStore((s) => s.addCoins);
+  const addExp = useAdventureStore((s) => s.addExp);
 
   const phase = useBattleStore((s) => s.phase);
   const heroActor = useBattleStore((s) => s.hero);
@@ -98,7 +99,7 @@ export default function BattlePage() {
   // One-time stamina cost to enter battle
   useEffect(() => {
     if (initialized.current && phase === 'player-turn' && turn === 1) {
-      consumeStamina(20);
+      consumeStamina(30);
     }
   }, [phase, turn]);
 
@@ -220,15 +221,14 @@ export default function BattlePage() {
                 <div>
                   <Card color="app-teal" className="text-center mb-3">
                     <p className="text-lg mb-1">{tacticDesc?.emoji}</p>
-                    <p className="font-extrabold text-sm" style={{ color: '#725d42' }}>{tacticDesc?.label} — {tacticDesc?.desc}</p>
                     {selectedSkill && (
-                      <>
-                        <p className="text-xs mt-2" style={{ color: '#9f927d' }}>{selectedSkill.description}</p>
-                        <p className="text-xs mt-1 font-bold" style={{ color: '#19c8b9' }}>
-                          MP {selectedSkill.mpCost} · ⚔️ {selectedSkill.damage || '?'} 伤害
-                        </p>
-                      </>
+                      <p className="text-base font-extrabold leading-snug" style={{ color: '#725d42' }}>
+                        「{selectedSkill.description}」
+                      </p>
                     )}
+                    <p className="text-xs mt-2 font-bold" style={{ color: '#19c8b9' }}>
+                      {tacticDesc?.label} {selectedSkill ? `· MP ${selectedSkill.mpCost} · ⚔️ ${selectedSkill.damage || '?'} 伤害` : `— ${tacticDesc?.desc}`}
+                    </p>
                     {heroActor.mp < (selectedSkill?.mpCost ?? 99) && (
                       <p className="text-xs mt-1 font-bold animate-pulse" style={{ color: '#e05a5a' }}>⚠️ MP不足！去做任务恢复。</p>
                     )}
@@ -267,7 +267,7 @@ export default function BattlePage() {
       {phase === 'victory' && (
         <Modal open title="🎉 净化成功！" footer={null} onClose={() => {}}>
           <div className="text-center py-4"><p className="text-lg font-bold mb-4" style={{ color: '#6fba2c' }}>心魔被净化了！</p>
-            <Button type="primary" size="large" onClick={() => { addCoins(50); playResolve(); navigateTo('victory'); }}>🌈 前往丰收祭 (+50🪙)</Button></div>
+            <Button type="primary" size="large" onClick={() => { addCoins(50); addExp(50); playResolve(); navigateTo('victory'); }}>🌈 前往丰收祭 (+50🪙 +50EXP)</Button></div>
         </Modal>
       )}
       {phase === 'defeat' && isFirstBattle && (

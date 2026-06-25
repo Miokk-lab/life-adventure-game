@@ -17,7 +17,7 @@ export default function TopBar() {
   const user = useUserStore((s) => s.user);
   const navigateTo = useGameStore((s) => s.navigateTo);
 
-  const expForNext = chapter === 3 ? 300 : chapter === 2 ? 200 : 100;
+  const expForNext = chapter >= 3 ? 200 : chapter >= 2 ? 100 : 50;
 
   return (
     <header className="sticky top-0 z-50 px-3 py-2 flex items-center gap-3 select-none"

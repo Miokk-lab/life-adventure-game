@@ -83,7 +83,7 @@ export default function VoyagePage() {
             <motion.div className="h-full rounded-full"
               style={{ background: 'linear-gradient(90deg, #19c8b9, #3dd4c6)', width: `${progress}%` }} />
           </div>
-          <p className="text-xs font-bold mt-2" style={{ color: '#5D4037' }}>
+          <p className="text-sm font-extrabold mt-2" style={{ color: '#f8f8f0', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
             {Math.round(progress)}% — 航向迷雾之岛
           </p>
         </div>

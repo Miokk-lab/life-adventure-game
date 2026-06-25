@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Button, Card, Input, Tabs, Title } from 'animal-island-ui';
 import type { TabItem } from 'animal-island-ui';
 import { useGameStore } from '../../stores/useGameStore';
 import { useUserStore } from '../../stores/useUserStore';
 import ItemIcon from '../shared/ItemIcon';
+import { setPageAmbient, stopAmbient } from '../../systems/soundEngine';
 
 export default function LoginPage() {
   const navigateTo = useGameStore((s) => s.navigateTo);
   const setUser = useUserStore((s) => s.setUser);
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  useEffect(() => { setPageAmbient('login'); return () => stopAmbient(); }, []);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPass, setLoginPass] = useState('');
   const [regEmail, setRegEmail] = useState('');
