@@ -10,11 +10,11 @@ import FloatingText, { spawnFloatingText } from '../shared/FloatingText';
 import { playResolve, playHurt, playCollect } from '../../systems/soundEngine';
 
 const COPING_TACTICS = [
-  { key: 'avoid', label: '躲避', emoji: '🐢', desc: '暂时远离压力源，给自己空间' },
-  { key: 'resist', label: '抵抗', emoji: '🦥', desc: '观察并命名情绪，与它保持距离' },
-  { key: 'adapt', label: '适应', emoji: '🐯', desc: '采取微小行动，打破无力感' },
-  { key: 'challenge', label: '挑战', emoji: '🦅', desc: '直面恐惧，做一件你一直在逃避的事' },
-  { key: 'transform', label: '转换', emoji: '🐍', desc: '换个角度看问题，寻找成长契机' },
+  { key: 'avoid', label: '躲避', emoji: '🐢', desc: '暂时远离压力源，给自己空间', mpCost: 10 },
+  { key: 'resist', label: '抵抗', emoji: '🦥', desc: '观察并命名情绪，与它保持距离', mpCost: 20 },
+  { key: 'adapt', label: '适应', emoji: '🐯', desc: '采取微小行动，打破无力感', mpCost: 20 },
+  { key: 'challenge', label: '挑战', emoji: '🦅', desc: '直面恐惧，做一件你一直在逃避的事', mpCost: 30 },
+  { key: 'transform', label: '转换', emoji: '🐍', desc: '换个角度看问题，寻找成长契机', mpCost: 20 },
 ];
 
 export default function BattlePage() {
@@ -105,10 +105,11 @@ export default function BattlePage() {
 
   const handleExecute = () => {
     if (!selectedCoping) return;
+    const tactic = COPING_TACTICS.find(t => t.key === selectedCoping);
+    if (!tactic || heroActor.mp < tactic.mpCost) return;
     const skill = availableSkills.find(s => s.id === selectedSkillId);
-    if (!skill || heroActor.mp < skill.mpCost) return;
-    setArenaMsg({ hero: skill.name, monsterDmg: undefined });
-    executeTurn();
+    setArenaMsg({ hero: skill?.name ?? '攻击', monsterDmg: undefined });
+    executeTurn(tactic.mpCost);
     setSelectedCoping(null);
     playHurt();
   };
@@ -227,15 +228,15 @@ export default function BattlePage() {
                       </p>
                     )}
                     <p className="text-xs mt-2 font-bold" style={{ color: '#19c8b9' }}>
-                      {tacticDesc?.label} {selectedSkill ? `· MP ${selectedSkill.mpCost} · ⚔️ ${selectedSkill.damage || '?'} 伤害` : `— ${tacticDesc?.desc}`}
+                      {tacticDesc?.label} · MP {tacticDesc?.mpCost} {selectedSkill ? `· ⚔️ ${selectedSkill.damage || '?'} 伤害` : `— ${tacticDesc?.desc}`}
                     </p>
-                    {heroActor.mp < (selectedSkill?.mpCost ?? 99) && (
+                    {heroActor.mp < (COPING_TACTICS.find(t=>t.key===selectedCoping)?.mpCost ?? 99) && (
                       <p className="text-xs mt-1 font-bold animate-pulse" style={{ color: '#e05a5a' }}>⚠️ MP不足！去做任务恢复。</p>
                     )}
                   </Card>
                   <div className="flex gap-2">
                     <Button type="default" size="small" onClick={() => { setSelectedCoping(null); selectSkill(''); }}>重选</Button>
-                    <Button type="primary" size="large" block onClick={handleExecute} disabled={!selectedSkill || heroActor.mp < selectedSkill.mpCost}>
+                    <Button type="primary" size="large" block onClick={handleExecute} disabled={!selectedSkill || heroActor.mp < (COPING_TACTICS.find(t=>t.key===selectedCoping)?.mpCost ?? 99)}>
                       <Sword size={14} className="inline mr-1" />执行战术 · 攻击心魔
                     </Button>
                   </div>

@@ -18,7 +18,7 @@ interface BattleState {
 
   initBattle: (heroName: string, heroImg: string, monsterName: string, monsterImg: string, monsterMaxHp: number, skills: BattleSkill[]) => void;
   selectSkill: (skillId: string) => void;
-  executeTurn: () => void;
+  executeTurn: (mpCost?: number) => void;
   advancePhase: () => void;
   forceNarrativeDefeat: () => void;
   resetBattle: () => void;
@@ -58,14 +58,15 @@ export const useBattleStore = create<BattleState>((set, get) => ({
 
   selectSkill: (skillId) => set({ selectedSkillId: skillId }),
 
-  executeTurn: () => {
+  executeTurn: (mpCost?: number) => {
     const s = get();
     if (s.phase !== 'player-turn' || !s.selectedSkillId) return;
     const skill = s.availableSkills.find((sk) => sk.id === s.selectedSkillId);
-    if (!skill || s.hero.mp < skill.mpCost) return;
+    const cost = mpCost ?? skill?.mpCost ?? 10;
+    if (!skill || s.hero.mp < cost) return;
 
     // Player action — apply damage
-    const newMp = s.hero.mp - skill.mpCost;
+    const newMp = s.hero.mp - cost;
     const newMonsterHp = Math.max(0, s.monster.hp - skill.damage);
     let newLog = addLog(s.log, `🦸 ${s.hero.name} 使用【${skill.name}】！造成 ${skill.damage} 点伤害`, 'player-action');
 

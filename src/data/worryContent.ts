@@ -1,8 +1,11 @@
 import type { WorryCategory, DailyTask } from '../types';
 
+export interface SortGameData { baskets: { key: string; label: string; emoji: string }[]; items: { text: string; basket: string }[]; }
+export interface MiniGameDef { id: string; name: string; emoji: string; description: string; template?: string; sortData?: SortGameData; }
+
 export interface WorryGameContent {
   tasks: { type: string; descriptions: string[]; targets: number[]; rewards: DailyTask['reward'][] }[];
-  miniGames: { id: string; name: string; emoji: string; description: string }[];
+  miniGames: MiniGameDef[];
   teas: { name: string; emoji: string; cost: number; stamina: number; desc: string; ingredients: string[] }[];
 }
 
