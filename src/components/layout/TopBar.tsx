@@ -34,44 +34,42 @@ export default function TopBar() {
         </div>
       </button>
 
-      {/* Bars: 2x2 grid — left: EXP+体力, right: HP+MP */}
-      <div className="flex gap-3 flex-1 min-w-0">
-        {/* Left column: EXP + 体力 */}
-        <div className="flex flex-col gap-1 min-w-[100px]">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-extrabold w-4" style={{ color: '#f5c31c' }}>⭐</span>
-            <div className="flex-1 h-3 rounded-full overflow-hidden border-2" style={{ background: '#F2EDE0', borderColor: '#c4b89e' }}>
+      {/* Bars: 2x2 grid — left: EXP+体力, right: HP+MP — 10x wider */}
+      <div className="flex gap-4 flex-1">
+        <div className="flex flex-col gap-1.5 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-extrabold shrink-0" style={{ color: '#f5c31c' }}>⭐</span>
+            <div className="flex-1 h-4 rounded-full overflow-hidden border-2" style={{ background: '#F2EDE0', borderColor: '#c4b89e' }}>
               <motion.div animate={{ width: `${Math.min(100, (exp / expForNext) * 100)}%` }}
                 className="h-full rounded-full bar-exp" />
             </div>
-            <span className="text-[9px] font-extrabold w-12 shrink-0" style={{ color: '#f5c31c' }}>{exp}/{expForNext}</span>
+            <span className="text-[10px] font-extrabold shrink-0 w-14 text-right" style={{ color: '#f5c31c' }}>{exp}/{expForNext}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-extrabold w-4" style={{ color: '#6fba2c' }}>💚</span>
-            <div className="flex-1 h-3 rounded-full overflow-hidden border-2" style={{ background: '#F2EDE0', borderColor: '#c4b89e' }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-extrabold shrink-0" style={{ color: '#6fba2c' }}>💚</span>
+            <div className="flex-1 h-4 rounded-full overflow-hidden border-2" style={{ background: '#F2EDE0', borderColor: '#c4b89e' }}>
               <motion.div animate={{ width: `${(stamina / maxStamina) * 100}%` }}
                 className="h-full rounded-full bar-stamina" />
             </div>
-            <span className="text-[9px] font-extrabold w-12 shrink-0" style={{ color: '#6fba2c' }}>{stamina}/{maxStamina}</span>
+            <span className="text-[10px] font-extrabold shrink-0 w-14 text-right" style={{ color: '#6fba2c' }}>{stamina}/{maxStamina}</span>
           </div>
         </div>
-        {/* Right column: HP + MP */}
-        <div className="flex flex-col gap-1 min-w-[100px]">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-extrabold w-4" style={{ color: '#e05a5a' }}>❤️</span>
-            <div className="flex-1 h-3 rounded-full overflow-hidden border-2" style={{ background: '#F2EDE0', borderColor: '#c4b89e' }}>
+        <div className="flex flex-col gap-1.5 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-extrabold shrink-0" style={{ color: '#e05a5a' }}>❤️</span>
+            <div className="flex-1 h-4 rounded-full overflow-hidden border-2" style={{ background: '#F2EDE0', borderColor: '#c4b89e' }}>
               <motion.div animate={{ width: `${maxHp ? (hp / maxHp) * 100 : 0}%` }}
                 className="h-full rounded-full bar-hp" />
             </div>
-            <span className="text-[9px] font-extrabold w-12 shrink-0" style={{ color: '#e05a5a' }}>{hp}/{maxHp}</span>
+            <span className="text-[10px] font-extrabold shrink-0 w-14 text-right" style={{ color: '#e05a5a' }}>{hp}/{maxHp}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-extrabold w-4" style={{ color: '#5b9bd5' }}>💙</span>
-            <div className="flex-1 h-3 rounded-full overflow-hidden border-2" style={{ background: '#F2EDE0', borderColor: '#c4b89e' }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-extrabold shrink-0" style={{ color: '#5b9bd5' }}>💙</span>
+            <div className="flex-1 h-4 rounded-full overflow-hidden border-2" style={{ background: '#F2EDE0', borderColor: '#c4b89e' }}>
               <motion.div animate={{ width: `${maxMp ? (mp / maxMp) * 100 : 0}%` }}
                 className="h-full rounded-full bar-mp" />
             </div>
-            <span className="text-[9px] font-extrabold w-12 shrink-0" style={{ color: '#5b9bd5' }}>{mp}/{maxMp}</span>
+            <span className="text-[10px] font-extrabold shrink-0 w-14 text-right" style={{ color: '#5b9bd5' }}>{mp}/{maxMp}</span>
           </div>
         </div>
       </div>

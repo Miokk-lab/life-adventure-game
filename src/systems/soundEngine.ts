@@ -8,6 +8,112 @@ let audioCtx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
 let melodyInterval: ReturnType<typeof setInterval> | null = null;
 let isMuted = false;
+let currentPage = '';
+
+export function setPageAmbient(page: string) {
+  if (page === currentPage) return;
+  currentPage = page;
+  stopAmbient();
+  if (isMuted) return;
+
+  switch (page) {
+    case 'login':
+    case 'worry':
+      startWavesAmbient(); break;
+    case 'voyage':
+      startVoyageAmbient(); break;
+    case 'analysis':
+      startMuseumAmbient(); break;
+    case 'gamescreen':
+    case 'battle':
+      startAmbient(); break; // pentatonic battle music
+    case 'tasks':
+      startTasksAmbient(); break;
+    case 'minigames':
+      startNatureAmbient(); break;
+    case 'teashop':
+      startCafeAmbient(); break;
+    case 'victory':
+      startVictoryAmbient(); break;
+    default:
+      startAmbient(); break;
+  }
+}
+
+function startWavesAmbient() {
+  const ctx = getCtx(); if (!masterGain || isMuted) return;
+  const now = ctx.currentTime;
+  // Gentle low waves
+  const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 180;
+  const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.15;
+  const lfoGain = ctx.createGain(); lfoGain.gain.value = 20;
+  lfo.connect(lfoGain).connect(osc.frequency);
+  const gain = ctx.createGain(); gain.gain.value = 0.06;
+  osc.connect(gain).connect(masterGain);
+  osc.start(); lfo.start();
+  melodyInterval = setInterval(() => {
+    playNote(523, ctx.currentTime, 0.5, 0.03, 'sine'); // occasional bell
+  }, 6000);
+}
+
+function startVoyageAmbient() {
+  const ctx = getCtx(); if (!masterGain || isMuted) return;
+  // Low rumble + creak
+  const osc = ctx.createOscillator(); osc.type = 'triangle'; osc.frequency.value = 80;
+  const gain = ctx.createGain(); gain.gain.value = 0.04;
+  osc.connect(gain).connect(masterGain); osc.start();
+}
+
+function startMuseumAmbient() {
+  const ctx = getCtx(); if (!masterGain || isMuted) return;
+  // Soft strings feel: filtered saw
+  const osc = ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = 220;
+  const filter = ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 400;
+  const gain = ctx.createGain(); gain.gain.value = 0.03;
+  osc.connect(filter).connect(gain).connect(masterGain); osc.start();
+}
+
+function startTasksAmbient() {
+  const ctx = getCtx(); if (!masterGain || isMuted) return;
+  // Light rhythmic blips
+  const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 440;
+  const gain = ctx.createGain(); gain.gain.value = 0.04;
+  osc.connect(gain).connect(masterGain); osc.start();
+  let count = 0;
+  melodyInterval = setInterval(() => { count++; osc.frequency.value = count % 2 === 0 ? 440 : 523; }, 800);
+}
+
+function startNatureAmbient() {
+  const ctx = getCtx(); if (!masterGain || isMuted) return;
+  // Bird-like chirps: random high sine notes
+  const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 1200;
+  const gain = ctx.createGain(); gain.gain.value = 0.02;
+  osc.connect(gain).connect(masterGain); osc.start();
+  melodyInterval = setInterval(() => {
+    const freqs = [800, 1000, 1200, 1400, 1600];
+    osc.frequency.value = freqs[Math.floor(Math.random() * freqs.length)];
+    gain.gain.value = 0.04;
+    setTimeout(() => { gain.gain.value = 0.02; }, 100);
+  }, 2000);
+}
+
+function startCafeAmbient() {
+  const ctx = getCtx(); if (!masterGain || isMuted) return;
+  // Soft jazz: gentle chords
+  [262, 330, 392].forEach((f, i) => {
+    const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = f;
+    const gain = ctx.createGain(); gain.gain.value = 0.02;
+    osc.connect(gain).connect(masterGain!); osc.start();
+  });
+}
+
+function startVictoryAmbient() {
+  const ctx = getCtx(); if (!masterGain || isMuted) return;
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((f, i) => {
+    setTimeout(() => playNote(f, ctx.currentTime + i * 0.3, 0.6, 0.06), i * 300);
+  });
+}
 
 const PENTATONIC = [262, 294, 330, 392, 440]; // C4 D4 E4 G4 A4
 const PENTATONIC_HIGH = [523, 587, 659, 784, 880]; // C5 D5 E5 G5 A5

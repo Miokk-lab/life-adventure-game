@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
-import { Button, Card, Footer, Radio } from 'animal-island-ui';
+import { Button, Card, Footer } from 'animal-island-ui';
 import { motion } from 'motion/react';
 import { worryTypeList } from '../../constants/worryTypes';
 import { MAX_WORRY_LENGTH } from '../../constants';
@@ -26,21 +26,28 @@ export default function WorryPage() {
     const recognition = new SpeechRecognition();
     recognition.lang = 'zh-CN';
     recognition.interimResults = true;
-    recognition.continuous = true;
+    recognition.continuous = false;
     recognitionRef.current = recognition;
+    let interim = '';
 
     recognition.onresult = (event: any) => {
-      let final = '';
+      let transcript = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        final += event.results[i][0].transcript;
+        const result = event.results[i];
+        transcript += result[0].transcript;
+        if (result.isFinal) {
+          setText(prev => {
+            const combined = prev + result[0].transcript;
+            return combined.slice(0, MAX_WORRY_LENGTH);
+          });
+          interim = '';
+        } else {
+          interim = result[0].transcript;
+        }
       }
-      setText(prev => {
-        const combined = prev + final;
-        return combined.slice(0, MAX_WORRY_LENGTH);
-      });
     };
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => { setIsListening(false); };
+    recognition.onerror = () => { setIsListening(false); };
 
     setIsListening(true);
     recognition.start();
@@ -82,8 +89,25 @@ export default function WorryPage() {
       </Card>
 
       <Card color="app-yellow" className="mb-6 max-w-2xl mx-auto">
-        <h3 className="text-sm font-extrabold mb-3" style={{ color: '#725d42' }}>🏷️ 选择烦恼分类邮票</h3>
-        <Radio options={radioOptions} value={category} onChange={(v) => setCategory(v as WorryCategory)} direction="vertical" size="large" />
+        <h3 className="text-sm font-extrabold mb-3 text-center" style={{ color: '#725d42' }}>🏷️ 选择烦恼分类邮票</h3>
+        <div className="grid grid-cols-4 gap-2">
+          {worryTypeList.map((w) => (
+            <motion.button key={w.key} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={() => setCategory(w.key)}
+              className="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all"
+              style={{
+                borderColor: category === w.key ? w.color : '#e8e2d6',
+                background: category === w.key ? `${w.color}15` : '#fff',
+                boxShadow: category === w.key ? `0 0 8px ${w.color}40` : 'none',
+              }}>
+              <span className="text-2xl">{w.emoji}</span>
+              <span className="text-[10px] font-extrabold leading-tight text-center" style={{ color: '#725d42' }}>
+                {w.label}
+              </span>
+              <span className="text-[8px] font-bold" style={{ color: w.color }}>{w.stampLabel}</span>
+            </motion.button>
+          ))}
+        </div>
       </Card>
 
       <div className="text-center mb-8">

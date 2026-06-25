@@ -7,7 +7,7 @@ import { motion } from 'motion/react';
 import { Sword } from 'lucide-react';
 import ProgressBar from '../shared/ProgressBar';
 import FloatingText, { spawnFloatingText } from '../shared/FloatingText';
-import { startAmbient, stopAmbient, playResolve, playHurt, playCollect } from '../../systems/soundEngine';
+import { playResolve, playHurt, playCollect } from '../../systems/soundEngine';
 
 const COPING_TACTICS = [
   { key: 'avoid', label: '躲避', emoji: '🐢', desc: '暂时远离压力源，给自己空间' },
@@ -52,8 +52,6 @@ export default function BattlePage() {
 
   const selectedSkill = availableSkills.find(s => s.id === selectedSkillId) ?? null;
 
-  useEffect(() => { startAmbient(); return () => stopAmbient(); }, []);
-
   useEffect(() => {
     if (!initialized.current && heroData && monsterData && battleSkills.length > 0) {
       initialized.current = true;
@@ -61,34 +59,30 @@ export default function BattlePage() {
     }
   }, [heroData, monsterData, battleSkills]);
 
-  // Sync HP/MP changes → adventure store + floating text + arena messages
+  // Sync HP/MP changes → adventure store + floating text
+  // Only sync hero HP damage during enemy-turn phase
   useEffect(() => {
     if (!initialized.current) return;
     const hpDiff = heroActor.hp - prevHeroHp.current;
     const monsterDiff = monsterActor.hp - prevMonsterHp.current;
     const mpDiff = heroActor.mp - prevHeroMp.current;
 
-    if (hpDiff < 0) {
+    // Hero HP only decreases during enemy-turn
+    if (hpDiff < 0 && phase === 'enemy-turn') {
       updateHp(hpDiff);
       spawnFloatingText(`${hpDiff}`, '#e05a5a');
-      setArenaMsg(m => ({ ...m, heroDmg: hpDiff }));
     }
-    if (monsterDiff < 0) {
+    // Monster HP decreases during player-action (hero attacks)
+    if (monsterDiff < 0 && phase === 'player-action') {
       spawnFloatingText(`${monsterDiff}`, '#ff9f1c');
-      setArenaMsg(m => ({ ...m, monsterDmg: monsterDiff }));
     }
+    // MP always syncs
     if (mpDiff !== 0) updateMp(mpDiff);
 
     prevHeroHp.current = heroActor.hp;
     prevMonsterHp.current = monsterActor.hp;
     prevHeroMp.current = heroActor.mp;
-
-    // Clear arena messages after 2s
-    if (hpDiff < 0 || monsterDiff < 0) {
-      const t = setTimeout(() => setArenaMsg({}), 2000);
-      return () => clearTimeout(t);
-    }
-  }, [heroActor.hp, monsterActor.hp, heroActor.mp]);
+  }, [heroActor.hp, monsterActor.hp, heroActor.mp, phase]);
 
   const handleSelectCoping = (tactic: string) => {
     setSelectedCoping(tactic);

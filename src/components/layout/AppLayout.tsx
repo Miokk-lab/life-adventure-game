@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import TopBar from './TopBar';
 import Sidebar from './Sidebar';
 import { useGameStore } from '../../stores/useGameStore';
+import { setPageAmbient, stopAmbient } from '../../systems/soundEngine';
 
 interface Props {
   children: ReactNode;
@@ -19,6 +20,11 @@ export default function AppLayout({
 }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentPage = useGameStore((s) => s.currentPage);
+
+  useEffect(() => {
+    setPageAmbient(currentPage);
+    return () => stopAmbient();
+  }, [currentPage]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#F8F5EB' }}>

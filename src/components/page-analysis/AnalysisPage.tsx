@@ -56,14 +56,14 @@ export default function AnalysisPage() {
               <div className="space-y-2">
                 <div className="p-2 rounded-xl border-2 border-dashed border-[#C4B89E]">
                   <p className="text-[10px] font-black" style={{ color: '#A08E75' }}>攻击习性</p>
-                  <p className="text-xs italic" style={{ color: '#725d42' }}>
-                    {monster?.attacks?.[0] ?? '未知攻击模式'}
-                  </p>
+                  {(monster?.attacks ?? ['未知攻击模式']).map((a, i) => (
+                    <p key={i} className="text-xs mt-0.5" style={{ color: '#725d42' }}>• {a.length > 60 ? a.slice(0, 57) + '…' : a}</p>
+                  ))}
                 </div>
                 <div className="p-2 rounded-xl bg-[#E8F5E9]">
                   <p className="text-[10px] font-black" style={{ color: '#3A8D63' }}>弱点</p>
                   <p className="text-xs font-bold" style={{ color: '#2E7D32' }}>
-                    {monster?.story?.slice(0, 60) ?? '探索中…'}
+                    {monster?.story?.slice(0, 120) ?? '探索中…'}
                   </p>
                 </div>
               </div>
@@ -114,7 +114,7 @@ export default function AnalysisPage() {
                     🔍 核心挑战
                   </p>
                   <p className="text-xs font-bold ml-3" style={{ color: '#2E7D32' }}>
-                    {monster?.story?.slice(0, 80) ?? '探索中…'}
+                    {cbtAnalysis?.slice(0, 100) ?? '探索中…'}
                   </p>
                 </div>
               </div>
