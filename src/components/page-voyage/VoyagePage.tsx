@@ -16,7 +16,6 @@ export default function VoyagePage() {
   const worryText = useGameStore((s) => s.worryText);
   const worryType = useGameStore((s) => s.worryType);
   const navigateTo = useGameStore((s) => s.navigateTo);
-
   const setAdventureData = useAdventureStore((s) => s.setAdventureData);
   const setTasks = useAdventureStore((s) => s.setTasks);
 
@@ -25,36 +24,25 @@ export default function VoyagePage() {
   const [showTimeout, setShowTimeout] = useState(false);
   const [done, setDone] = useState(false);
 
-  // Simulate loading progress
   useEffect(() => {
     if (done) return;
     const interval = setInterval(() => {
       setProgress((prev) => {
         const next = prev + Math.random() * 6 + 3;
-        if (next >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
+        if (next >= 100) { clearInterval(interval); return 100; }
         return next;
       });
     }, 500);
-
     const timeout = setTimeout(() => setShowTimeout(true), 12000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
+    return () => { clearInterval(interval); clearTimeout(timeout); };
   }, [done]);
 
-  // Update phase text
   useEffect(() => {
     for (let i = PHASES.length - 1; i >= 0; i--) {
       if (progress >= PHASES[i].pct) { setPhaseIndex(i); break; }
     }
   }, [progress]);
 
-  // When complete, load data and advance
   useEffect(() => {
     if (progress >= 100 && !done) {
       setDone(true);
@@ -75,66 +63,45 @@ export default function VoyagePage() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      {/* Coconut tree Loading background */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-40 scale-[2] pointer-events-none">
-        <Loading active={progress < 100} />
+      {/* Coconut tree Loading background overlay */}
+      <div className="absolute inset-0">
+        <Loading active style={{ position: 'absolute', inset: 0, height: '100%' }} />
       </div>
 
       {/* Content overlay */}
       <div className="relative z-10 w-full max-w-lg mx-auto px-4 text-center">
-        {/* Boat emoji */}
-        <motion.div
-          className="text-6xl mb-6"
+        <motion.div className="text-6xl mb-6"
           animate={{ y: [0, -10, 0], rotate: [-2, 2, -2] }}
-          transition={{ duration: 3, repeat: Infinity }}
-        >
+          transition={{ duration: 3, repeat: Infinity }}>
           ⛵
         </motion.div>
 
-        {/* Progress */}
         <div className="mb-6">
-          <div
-            className="w-full h-4 rounded-full overflow-hidden border-3 mx-auto"
-            style={{ borderColor: '#725D42', background: '#F2EDE0' }}
-          >
-            <motion.div
-              className="h-full rounded-full"
-              style={{
-                background: 'linear-gradient(90deg, #19c8b9, #3dd4c6)',
-                width: `${progress}%`,
-              }}
-            />
+          <div className="w-full h-4 rounded-full overflow-hidden border-3 mx-auto"
+            style={{ borderColor: '#725D42', background: 'rgba(255,255,255,0.6)' }}>
+            <motion.div className="h-full rounded-full"
+              style={{ background: 'linear-gradient(90deg, #19c8b9, #3dd4c6)', width: `${progress}%` }} />
           </div>
-          <p className="text-xs font-bold mt-2" style={{ color: '#9f927d' }}>
+          <p className="text-xs font-bold mt-2" style={{ color: '#5D4037' }}>
             {Math.round(progress)}% — 航向迷雾之岛
           </p>
         </div>
 
-        {/* Narrative card */}
-        <Card className="text-left shadow-[0_8px_0_0_#C4B89E] border-4 border-[#725D42] rounded-[32px]">
+        <Card className="text-left shadow-[0_8px_0_0_#C4B89E] border-4 border-[#725D42] rounded-[32px] bg-white/90">
           <Typewriter speed={45} trigger={phaseIndex}>
             {PHASES[phaseIndex]?.text ?? ''}
           </Typewriter>
         </Card>
       </div>
 
-      {/* Timeout modal */}
       {showTimeout && (
         <Modal open title="🌊 海上风浪很大" onClose={() => setShowTimeout(false)} footer={null}>
           <div className="text-center py-4">
-            <p className="text-lg font-bold mb-4" style={{ color: '#725d42' }}>
-              最近海上风浪很大，信号不太好…
-            </p>
-            <p className="text-sm mb-6" style={{ color: '#9f927d' }}>
-              等待继续航行，还是前往最近的小岛？
-            </p>
+            <p className="text-lg font-bold mb-4" style={{ color: '#725d42' }}>最近海上风浪很大，信号不太好…</p>
+            <p className="text-sm mb-6" style={{ color: '#9f927d' }}>等待继续航行，还是前往最近的小岛？</p>
             <div className="flex gap-3 justify-center">
-              <Button type="default" onClick={() => setShowTimeout(false)}>
-                ⏳ 继续等待
-              </Button>
-              <Button type="primary" onClick={() => { setShowTimeout(false); setProgress(100); }}>
-                🏝️ 前往最近小岛
-              </Button>
+              <Button type="default" onClick={() => setShowTimeout(false)}>⏳ 继续等待</Button>
+              <Button type="primary" onClick={() => { setShowTimeout(false); setProgress(100); }}>🏝️ 前往最近小岛</Button>
             </div>
           </div>
         </Modal>

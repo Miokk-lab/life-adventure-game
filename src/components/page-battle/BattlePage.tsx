@@ -25,6 +25,8 @@ export default function BattlePage() {
   const chapter = useAdventureStore((s) => s.chapter);
   const stamina = useAdventureStore((s) => s.stamina);
   const consumeStamina = useAdventureStore((s) => s.consumeStamina);
+  const updateHp = useAdventureStore((s) => s.updateHp);
+  const addCoins = useAdventureStore((s) => s.addCoins);
 
   const phase = useBattleStore((s) => s.phase);
   const heroActor = useBattleStore((s) => s.hero);
@@ -41,53 +43,59 @@ export default function BattlePage() {
 
   const [selectedCoping, setSelectedCoping] = useState<string | null>(null);
   const initialized = useRef(false);
+  const prevHeroHp = useRef(heroActor.hp);
+  const prevMonsterHp = useRef(monsterActor.hp);
 
   const selectedSkill = availableSkills.find(s => s.id === selectedSkillId) ?? null;
 
   useEffect(() => { startAmbient(); return () => stopAmbient(); }, []);
 
   useEffect(() => {
-    if (!initialized.current && heroData && monsterData) {
+    if (!initialized.current && heroData && monsterData && availableSkills.length > 0) {
       initialized.current = true;
-      const skills: BattleSkill[] = (heroData as any).skills ?? availableSkills;
       initBattle(
         heroData.name, heroData.imageUrl,
         monsterData.name, monsterData.imageUrl,
         isFirstBattle ? 300 : 150,
-        skills.length > 0 ? skills : availableSkills,
+        availableSkills,
       );
     }
-  }, [heroData, monsterData]);
+  }, [heroData, monsterData, availableSkills]);
+
+  // Sync battle store HP changes → adventure store + floating text
+  useEffect(() => {
+    if (!initialized.current) return;
+    const hpDiff = heroActor.hp - prevHeroHp.current;
+    const monsterDiff = monsterActor.hp - prevMonsterHp.current;
+    if (hpDiff < 0) {
+      updateHp(hpDiff);
+      spawnFloatingText(`${hpDiff}`, '#e05a5a');
+    }
+    if (monsterDiff < 0) {
+      spawnFloatingText(`${monsterDiff}`, '#ff9f1c');
+    }
+    prevHeroHp.current = heroActor.hp;
+    prevMonsterHp.current = monsterActor.hp;
+  }, [heroActor.hp, monsterActor.hp]);
 
   const handleSelectCoping = (tactic: string) => {
     setSelectedCoping(tactic);
-    // Map coping tactic to a skill
     const skillMap: Record<string, string> = {
-      avoid: 'turtle_l1', resist: 'sloth_l1', adapt: 'tiger_l1',
-      challenge: 'tiger_l2', transform: 'snake_l1',
+      avoid: 'turtle', resist: 'sloth', adapt: 'tiger', challenge: 'tiger', transform: 'snake',
     };
-    // Find the matching skill
-    const mappedId = skillMap[tactic];
-    const skill = availableSkills.find(s => s.id === mappedId || s.animal === mappedId?.split('_')[0]);
-    if (skill) {
-      selectSkill(skill.id);
-    } else if (availableSkills.length > 0) {
-      selectSkill(availableSkills[0].id);
-    }
+    const animal = skillMap[tactic];
+    // Find first available skill for this animal
+    const skill = availableSkills.find(s => s.animal === animal && s.level <= chapter);
+    if (skill) selectSkill(skill.id);
+    else if (availableSkills.length > 0) selectSkill(availableSkills[0].id);
     playCollect();
   };
 
   const handleExecute = () => {
-    if (!selectedCoping) return;
-    const skill = availableSkills.find(s => s.id === selectedSkillId);
-    const damage = 25 + (chapter >= 3 ? 10 : chapter >= 2 ? 5 : 0);
-
-    if (skill && skill.damage > 0) spawnFloatingText(`-${skill.damage}`, '#e05a5a');
-    else spawnFloatingText(`-${damage}`, '#e05a5a');
-    if (skill && skill.healAmount > 0) spawnFloatingText(`+${skill.healAmount}`, '#6fba2c');
-
+    if (!selectedCoping || stamina < 10) return;
+    // Let the battle store handle all damage math
     executeTurn();
-    consumeStamina(5);
+    consumeStamina(10);
     setSelectedCoping(null);
     playHurt();
   };
@@ -143,7 +151,7 @@ export default function BattlePage() {
       {phase === 'player-turn' && (
         <Card color="app-yellow">
           <h4 className="text-xs font-extrabold mb-3 text-center" style={{ color: '#725d42' }}>
-            🎯 选择应对策略
+            🎯 选择应对策略 (体力 -10/回合)
           </h4>
 
           {!selectedCoping ? (
@@ -173,15 +181,23 @@ export default function BattlePage() {
                     {selectedSkill.description}
                   </p>
                 )}
-                <p className="text-xs mt-1 font-bold" style={{ color: '#19c8b9' }}>
-                  {selectedSkill ? `MP ${selectedSkill.mpCost} · ⚔️ ${selectedSkill.damage || 25}` : '选择技能执行'}
-                </p>
+                {selectedSkill && (
+                  <p className="text-xs mt-1 font-bold" style={{ color: '#19c8b9' }}>
+                    MP {selectedSkill.mpCost} · ⚔️ {selectedSkill.damage || '?'} 伤害
+                    {selectedSkill.healAmount > 0 && ` · 💚 +${selectedSkill.healAmount} 恢复`}
+                  </p>
+                )}
+                {stamina < 10 && (
+                  <p className="text-xs mt-1 font-bold animate-pulse" style={{ color: '#e05a5a' }}>
+                    ⚠️ 体力不足！去花茶店补充体力。
+                  </p>
+                )}
               </Card>
               <div className="flex gap-2">
                 <Button type="default" size="small" onClick={() => { setSelectedCoping(null); selectSkill(''); }}>
                   重选
                 </Button>
-                <Button type="primary" size="large" block onClick={handleExecute}>
+                <Button type="primary" size="large" block onClick={handleExecute} disabled={stamina < 10}>
                   <Sword size={14} className="inline mr-1" />
                   执行战术 · 攻击心魔
                 </Button>
