@@ -30,12 +30,13 @@ export default function WorryPage() {
     recognitionRef.current = recognition;
 
     recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results)
-        .map((r: any) => r[0].transcript).join('');
-      setText(prev => {
-        const combined = prev + transcript;
-        return combined.slice(0, MAX_WORRY_LENGTH);
-      });
+      let newFinal = '';
+      for (const r of event.results) {
+        if (r.isFinal) newFinal += r[0].transcript;
+      }
+      if (newFinal) {
+        setText(prev => (prev + newFinal).slice(0, MAX_WORRY_LENGTH));
+      }
     };
     recognition.onend = () => { setIsListening(false); };
     recognition.onerror = () => { setIsListening(false); };

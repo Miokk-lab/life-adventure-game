@@ -16,10 +16,13 @@ const ALL_INGREDIENTS = [
   { id: 'peach', label: '🍑 蜜桃' },
   { id: 'oolong', label: '🍂 乌龙' },
   { id: 'orange', label: '🍊 甜橙' },
-  { id: 'star', label: '⭐ 星芒' },
   { id: 'lavender', label: '💜 薰衣草' },
   { id: 'cosmos', label: '🌸 波斯菊' },
   { id: 'lily', label: '🪷 百合' },
+  { id: 'rose', label: '🌹 玫瑰' },
+  { id: 'lemon', label: '🍋 柠檬' },
+  { id: 'ginger', label: '🫚 生姜' },
+  { id: 'honey', label: '🍯 蜂蜜' },
 ];
 
 export default function TeaShopPage() {

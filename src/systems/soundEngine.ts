@@ -1,218 +1,158 @@
 /**
- * Web Audio API — cheerful pentatonic healing music
- * Gentle arpeggios in C major pentatonic (C D E G A)
- * with soft nature ambience
+ * Healing, light, cheerful music — C major pentatonic (C D E G A)
+ * All pages get pleasant, soft background ambience
  */
 
 let audioCtx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
-let melodyInterval: ReturnType<typeof setInterval> | null = null;
+let allNodes: AudioNode[] = [];
+let allOscs: OscillatorNode[] = [];
+let intervals: ReturnType<typeof setInterval>[] = [];
 let isMuted = false;
-let currentPage = '';
 
-export function setPageAmbient(page: string) {
-  if (page === currentPage) return;
-  currentPage = page;
-  stopAmbient();
-  if (isMuted) return;
-
-  switch (page) {
-    case 'login':
-    case 'worry':
-      startWavesAmbient(); break;
-    case 'voyage':
-      startVoyageAmbient(); break;
-    case 'analysis':
-      startMuseumAmbient(); break;
-    case 'gamescreen':
-    case 'battle':
-      startAmbient(); break; // pentatonic battle music
-    case 'tasks':
-      startTasksAmbient(); break;
-    case 'minigames':
-      startNatureAmbient(); break;
-    case 'teashop':
-      startCafeAmbient(); break;
-    case 'victory':
-      startVictoryAmbient(); break;
-    default:
-      startAmbient(); break;
-  }
-}
-
-function startWavesAmbient() {
-  const ctx = getCtx(); if (!masterGain || isMuted) return;
-  const now = ctx.currentTime;
-  // Gentle low waves
-  const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 180;
-  const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.15;
-  const lfoGain = ctx.createGain(); lfoGain.gain.value = 20;
-  lfo.connect(lfoGain).connect(osc.frequency);
-  const gain = ctx.createGain(); gain.gain.value = 0.06;
-  osc.connect(gain).connect(masterGain);
-  osc.start(); lfo.start();
-  melodyInterval = setInterval(() => {
-    playNote(523, ctx.currentTime, 0.5, 0.03, 'sine'); // occasional bell
-  }, 6000);
-}
-
-function startVoyageAmbient() {
-  const ctx = getCtx(); if (!masterGain || isMuted) return;
-  // Low rumble + creak
-  const osc = ctx.createOscillator(); osc.type = 'triangle'; osc.frequency.value = 80;
-  const gain = ctx.createGain(); gain.gain.value = 0.04;
-  osc.connect(gain).connect(masterGain); osc.start();
-}
-
-function startMuseumAmbient() {
-  const ctx = getCtx(); if (!masterGain || isMuted) return;
-  // Soft strings feel: filtered saw
-  const osc = ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = 220;
-  const filter = ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 400;
-  const gain = ctx.createGain(); gain.gain.value = 0.03;
-  osc.connect(filter).connect(gain).connect(masterGain); osc.start();
-}
-
-function startTasksAmbient() {
-  const ctx = getCtx(); if (!masterGain || isMuted) return;
-  // Light rhythmic blips
-  const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 440;
-  const gain = ctx.createGain(); gain.gain.value = 0.04;
-  osc.connect(gain).connect(masterGain); osc.start();
-  let count = 0;
-  melodyInterval = setInterval(() => { count++; osc.frequency.value = count % 2 === 0 ? 440 : 523; }, 800);
-}
-
-function startNatureAmbient() {
-  const ctx = getCtx(); if (!masterGain || isMuted) return;
-  // Bird-like chirps: random high sine notes
-  const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 1200;
-  const gain = ctx.createGain(); gain.gain.value = 0.02;
-  osc.connect(gain).connect(masterGain); osc.start();
-  melodyInterval = setInterval(() => {
-    const freqs = [800, 1000, 1200, 1400, 1600];
-    osc.frequency.value = freqs[Math.floor(Math.random() * freqs.length)];
-    gain.gain.value = 0.04;
-    setTimeout(() => { gain.gain.value = 0.02; }, 100);
-  }, 2000);
-}
-
-function startCafeAmbient() {
-  const ctx = getCtx(); if (!masterGain || isMuted) return;
-  // Soft jazz: gentle chords
-  [262, 330, 392].forEach((f, i) => {
-    const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = f;
-    const gain = ctx.createGain(); gain.gain.value = 0.02;
-    osc.connect(gain).connect(masterGain!); osc.start();
-  });
-}
-
-function startVictoryAmbient() {
-  const ctx = getCtx(); if (!masterGain || isMuted) return;
-  const notes = [523, 659, 784, 1047];
-  notes.forEach((f, i) => {
-    setTimeout(() => playNote(f, ctx.currentTime + i * 0.3, 0.6, 0.06), i * 300);
-  });
-}
-
-const PENTATONIC = [262, 294, 330, 392, 440]; // C4 D4 E4 G4 A4
-const PENTATONIC_HIGH = [523, 587, 659, 784, 880]; // C5 D5 E5 G5 A5
+const PENTA = [262, 294, 330, 392, 440, 523, 587, 659, 784, 880]; // C4-C6 pentatonic
+const PENTA_LOW = [131, 165, 196, 262, 330]; // C3-C4
 
 function getCtx(): AudioContext {
-  if (!audioCtx) {
-    audioCtx = new AudioContext();
-    masterGain = audioCtx.createGain();
-    masterGain.gain.value = 0.12;
-    masterGain.connect(audioCtx.destination);
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+  if (!audioCtx) { audioCtx = new AudioContext(); masterGain = audioCtx.createGain(); masterGain.gain.value = 0.08; masterGain.connect(audioCtx.destination); }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
 
-function playNote(freq: number, startTime: number, duration: number, vol: number, type: OscillatorType = 'sine') {
-  const ctx = getCtx();
-  if (!masterGain || isMuted) return;
-  const osc = ctx.createOscillator();
-  osc.type = type;
-  osc.frequency.value = freq;
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(vol, startTime + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-  osc.connect(gain).connect(masterGain);
-  osc.start(startTime);
-  osc.stop(startTime + duration + 0.05);
+function cleanAll() {
+  allOscs.forEach(o => { try { o.stop(); } catch {} }); allOscs = [];
+  allNodes.forEach(n => { try { n.disconnect(); } catch {} }); allNodes = [];
+  intervals.forEach(i => clearInterval(i)); intervals = [];
 }
 
-// Gentle arpeggiated melody
-function playMelodyPhrase() {
+function osc(freq: number, type: OscillatorType = 'sine', vol = 0.03): OscillatorNode {
   const ctx = getCtx();
-  const now = ctx.currentTime;
-  const notes = [...PENTATONIC, ...PENTATONIC_HIGH];
-  // Pick 4-6 random notes ascending then descending
-  const count = 4 + Math.floor(Math.random() * 3);
-  const chosen: number[] = [];
-  for (let i = 0; i < count; i++) {
-    chosen.push(notes[Math.floor(Math.random() * notes.length)]);
-  }
-  chosen.sort((a, b) => a - b);
-  const phrase = [...chosen, ...chosen.reverse().slice(1)];
+  const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq;
+  const g = ctx.createGain(); g.gain.value = 0;
+  o.connect(g); g.connect(masterGain!);
+  allOscs.push(o); allNodes.push(g);
+  g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.3);
+  o.start();
+  return o;
+}
 
-  phrase.forEach((freq, i) => {
-    const delay = i * 0.2;
-    playNote(freq, now + delay, 0.3, 0.04, 'sine');
+function note(freq: number, start: number, dur: number, vol = 0.03, type: OscillatorType = 'sine') {
+  const ctx = getCtx(); if (!masterGain || isMuted) return;
+  const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq;
+  const g = ctx.createGain(); g.gain.setValueAtTime(0, start);
+  g.gain.linearRampToValueAtTime(vol, start + 0.03);
+  g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+  o.connect(g).connect(masterGain); o.start(start); o.stop(start + dur + 0.05);
+}
+
+function arp(notes: number[], interval: number, vol = 0.03) {
+  const id = setInterval(() => {
+    if (isMuted) return;
+    const f = notes[Math.floor(Math.random() * notes.length)];
+    note(f, getCtx().currentTime, 0.3, vol);
+  }, interval);
+  intervals.push(id);
+}
+
+// ── Page ambients ──
+
+function oceanAmbient() {
+  cleanAll();
+  // Soft wave: low filtered noise
+  osc(180, 'sine', 0.015);
+  const lfo = osc(0.2, 'sine', 10); lfo.connect((allNodes[1] as GainNode).gain);
+  // Occasional high bell (seagull feel)
+  arp(PENTA.filter((_, i) => i % 2 === 0), 4000, 0.025);
+}
+
+function voyageAmbient() {
+  cleanAll();
+  osc(131, 'triangle', 0.02); // low boat hum
+  arp([262, 330], 2000, 0.025); // gentle pulse
+}
+
+function museumAmbient() {
+  cleanAll();
+  // Slow ascending arp
+  const notes = [262, 294, 330, 392, 440, 523, 440, 392, 330, 294];
+  let i = 0;
+  const id = setInterval(() => { note(notes[i % notes.length], getCtx().currentTime, 0.6, 0.025); i++; }, 1500);
+  intervals.push(id);
+}
+
+function battleAmbient() {
+  cleanAll();
+  arp(PENTA, 800, 0.04);
+  arp(PENTA_LOW, 2400, 0.025);
+}
+
+function tasksAmbient() {
+  cleanAll();
+  // Steady rhythmic pulse
+  let beat = 0;
+  const id = setInterval(() => {
+    const f = beat % 4 === 0 ? 330 : beat % 2 === 0 ? 392 : 294;
+    note(f, getCtx().currentTime, 0.15, 0.025);
+    beat++;
+  }, 600);
+  intervals.push(id);
+}
+
+function natureAmbient() {
+  cleanAll();
+  // Bird-like random high notes
+  arp([784, 880, 1047, 1175, 1319], 1500 + Math.random() * 2000, 0.02);
+  // Wind: filtered noise
+  osc(600, 'sawtooth', 0.008);
+}
+
+function cafeAmbient() {
+  cleanAll();
+  // Soft jazz: maj7 chord
+  [262, 330, 392, 440].forEach(f => osc(f, 'sine', 0.015));
+  // Gentle plucked arp
+  arp([262, 330, 392, 440, 392, 330], 2000, 0.03);
+}
+
+function victoryAmbient() {
+  cleanAll();
+  // Ascending celebration
+  [523, 659, 784, 1047].forEach((f, i) => {
+    note(f, getCtx().currentTime + i * 0.3, 0.5, 0.05);
   });
+  arp([523, 659, 784, 1047, 784, 659], 3000, 0.035);
 }
 
-// Soft wave/bird ambience (filtered noise)
-let noiseNode: AudioBufferSourceNode | null = null;
-function startNatureAmbience() {
-  const ctx = getCtx();
-  if (!masterGain) return;
-  const bufferSize = ctx.sampleRate * 2;
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = (Math.random() * 2 - 1) * 0.03;
+// ── Public API ──
+
+let currentPage = '';
+export function setPageAmbient(page: string) {
+  if (page === currentPage) return;
+  currentPage = page;
+  cleanAll();
+  if (isMuted) return;
+  switch (page) {
+    case 'login': case 'worry': oceanAmbient(); break;
+    case 'voyage': voyageAmbient(); break;
+    case 'analysis': museumAmbient(); break;
+    case 'gamescreen': case 'battle': battleAmbient(); break;
+    case 'tasks': tasksAmbient(); break;
+    case 'minigames': natureAmbient(); break;
+    case 'teashop': cafeAmbient(); break;
+    case 'victory': victoryAmbient(); break;
+    default: battleAmbient(); break;
   }
-  noiseNode = ctx.createBufferSource();
-  noiseNode.buffer = buffer;
-  noiseNode.loop = true;
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.value = 800;
-  filter.Q.value = 0.5;
-  const gain = ctx.createGain();
-  gain.gain.value = 0.015;
-  noiseNode.connect(filter).connect(gain).connect(masterGain);
-  noiseNode.start();
 }
 
-export function startAmbient() {
-  if (melodyInterval) return;
-  startNatureAmbience();
-  playMelodyPhrase();
-  melodyInterval = setInterval(() => {
-    if (!isMuted) playMelodyPhrase();
-  }, 4000 + Math.random() * 3000);
-}
-
-export function stopAmbient() {
-  if (melodyInterval) { clearInterval(melodyInterval); melodyInterval = null; }
-  if (noiseNode) { try { noiseNode.stop(); } catch {} noiseNode = null; }
-}
-
-export function playCollect() { playNote(880, getCtx().currentTime, 0.12, 0.06, 'sine'); }
-export function playResolve() {
-  [523, 659, 784].forEach((f, i) => playNote(f, getCtx().currentTime + i * 0.12, 0.25, 0.07));
-}
-export function playHurt() { playNote(200, getCtx().currentTime, 0.18, 0.06, 'triangle'); }
-export function playClick() { playNote(1000, getCtx().currentTime, 0.04, 0.04, 'square'); }
+export function startAmbient() { setPageAmbient('battle'); }
+export function stopAmbient() { cleanAll(); }
+export function playCollect() { note(880, getCtx().currentTime, 0.12, 0.05); }
+export function playResolve() { note(523, getCtx().currentTime, 0.15, 0.05); note(659, getCtx().currentTime + 0.12, 0.15, 0.05); note(784, getCtx().currentTime + 0.24, 0.2, 0.06); }
+export function playHurt() { note(200, getCtx().currentTime, 0.15, 0.04, 'triangle'); }
+export function playClick() { note(1000, getCtx().currentTime, 0.04, 0.03, 'square'); }
 
 export function toggleMute() {
   isMuted = !isMuted;
-  if (masterGain) masterGain.gain.value = isMuted ? 0 : 0.12;
+  if (isMuted) { cleanAll(); } else { const p = currentPage; currentPage = ''; setPageAmbient(p); }
   return isMuted;
 }

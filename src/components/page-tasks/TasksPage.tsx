@@ -220,25 +220,17 @@ export default function TasksPage() {
             <p className="text-sm mb-4" style={{ color: '#725d42' }}>{activeGame.task.description}</p>
             <motion.div className="text-6xl mb-4"
               animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}>
-              🧘
-            </motion.div>
+              transition={{ duration: 2, repeat: Infinity }}>🧘</motion.div>
             <p className="text-lg font-extrabold mb-4" style={{ color: '#6fba2c' }}>
-              {stretchDone ? '✨ 完成！' : `伸展中… ${stretchTimer}秒`}
+              {stretchTimer >= 60 ? '✨ 完成！' : `伸展中… ${stretchTimer}秒 / 60秒`}
             </p>
-            {!stretchDone ? (
+            {stretchTimer < 60 ? (
               <div className="flex gap-3 justify-center">
-                <Button type="default" onClick={() => setStretchTimer(s => Math.min(s + 15, 60))}>
-                  +15秒 伸展
-                </Button>
-                <Button type="primary" onClick={() => setStretchTimer(60)}>
-                  快速完成
-                </Button>
+                <Button type="default" onClick={() => setStretchTimer(s => Math.min(s + 15, 60))}>+15秒 伸展</Button>
+                <Button type="primary" onClick={() => setStretchTimer(60)}>快速完成</Button>
               </div>
             ) : (
-              <Button type="primary" size="large" onClick={() => finishTask(activeGame.task)}>
-                ✅ 完成！领取奖励
-              </Button>
+              <Button type="primary" size="large" onClick={() => finishTask(activeGame.task)}>✅ 完成！领取奖励</Button>
             )}
           </div>
         </Modal>
