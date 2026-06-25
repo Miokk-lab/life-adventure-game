@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { HeroData, MonsterData, Companion, GalleryItem, DailyTask } from '../types';
-import { INITIAL_STAMINA, INITIAL_COINS, INITIAL_HP } from '../constants';
+import { INITIAL_STAMINA, INITIAL_COINS, INITIAL_HP, INITIAL_MP } from '../constants';
 
 interface AdventureState {
   adventureId: string | null;
@@ -12,6 +12,8 @@ interface AdventureState {
 
   hp: number;
   maxHp: number;
+  mp: number;
+  maxMp: number;
   stamina: number;
   maxStamina: number;
   coins: number;
@@ -19,6 +21,7 @@ interface AdventureState {
   chapter: number;
 
   tasks: DailyTask[];
+  battleSkills: import('../types').BattleSkill[];
   collection: string[];
   companions: Companion[];
   gallery: GalleryItem[];
@@ -37,10 +40,12 @@ interface AdventureState {
     cbtAnalysis: string;
     victoryText: string;
     victoryVideoUrl: string;
+    battleSkills?: import('../types').BattleSkill[];
   }) => void;
   setTasks: (tasks: DailyTask[]) => void;
   completeTask: (taskId: string) => void;
   updateHp: (delta: number) => void;
+  updateMp: (delta: number) => void;
   restoreHp: (amount: number) => void;
   consumeStamina: (amount: number) => void;
   restoreStamina: (amount: number) => void;
@@ -63,12 +68,15 @@ const initialState = {
   victoryVideoUrl: null,
   hp: INITIAL_HP,
   maxHp: INITIAL_HP,
+  mp: INITIAL_MP,
+  maxMp: INITIAL_MP,
   stamina: INITIAL_STAMINA,
   maxStamina: INITIAL_STAMINA,
   coins: INITIAL_COINS,
   exp: 0,
   chapter: 1,
   tasks: [],
+  battleSkills: [],
   collection: [],
   companions: [],
   gallery: [],
@@ -92,6 +100,7 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
       cbtAnalysis: data.cbtAnalysis,
       victoryText: data.victoryText,
       victoryVideoUrl: data.victoryVideoUrl,
+      battleSkills: data.battleSkills ?? [],
     }),
 
   setTasks: (tasks) => set({ tasks }),
@@ -110,6 +119,9 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
 
   updateHp: (delta) =>
     set((s) => ({ hp: Math.max(0, Math.min(s.maxHp, s.hp + delta)) })),
+
+  updateMp: (delta) =>
+    set((s) => ({ mp: Math.max(0, Math.min(s.maxMp, s.mp + delta)) })),
 
   restoreHp: (amount) =>
     set((s) => ({ hp: Math.min(s.maxHp, s.hp + amount) })),

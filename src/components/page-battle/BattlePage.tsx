@@ -22,10 +22,12 @@ export default function BattlePage() {
   const navigateTo = useGameStore((s) => s.navigateTo);
   const heroData = useAdventureStore((s) => s.hero);
   const monsterData = useAdventureStore((s) => s.monster);
+  const battleSkills = useAdventureStore((s) => s.battleSkills);
   const chapter = useAdventureStore((s) => s.chapter);
   const stamina = useAdventureStore((s) => s.stamina);
   const consumeStamina = useAdventureStore((s) => s.consumeStamina);
   const updateHp = useAdventureStore((s) => s.updateHp);
+  const updateMp = useAdventureStore((s) => s.updateMp);
   const addCoins = useAdventureStore((s) => s.addCoins);
 
   const phase = useBattleStore((s) => s.phase);
@@ -45,24 +47,25 @@ export default function BattlePage() {
   const initialized = useRef(false);
   const prevHeroHp = useRef(heroActor.hp);
   const prevMonsterHp = useRef(monsterActor.hp);
+  const prevHeroMp = useRef(heroActor.mp);
 
   const selectedSkill = availableSkills.find(s => s.id === selectedSkillId) ?? null;
 
   useEffect(() => { startAmbient(); return () => stopAmbient(); }, []);
 
   useEffect(() => {
-    if (!initialized.current && heroData && monsterData && availableSkills.length > 0) {
+    if (!initialized.current && heroData && monsterData && battleSkills.length > 0) {
       initialized.current = true;
       initBattle(
         heroData.name, heroData.imageUrl,
         monsterData.name, monsterData.imageUrl,
         isFirstBattle ? 300 : 150,
-        availableSkills,
+        battleSkills,
       );
     }
-  }, [heroData, monsterData, availableSkills]);
+  }, [heroData, monsterData, battleSkills]);
 
-  // Sync battle store HP changes → adventure store + floating text
+  // Sync battle store HP/MP changes → adventure store + floating text
   useEffect(() => {
     if (!initialized.current) return;
     const hpDiff = heroActor.hp - prevHeroHp.current;
@@ -74,9 +77,15 @@ export default function BattlePage() {
     if (monsterDiff < 0) {
       spawnFloatingText(`${monsterDiff}`, '#ff9f1c');
     }
+    // Sync MP directly from battle store
+    if (heroActor.mp !== prevHeroMp.current) {
+      const mpDiff = heroActor.mp - prevHeroMp.current;
+      updateMp(mpDiff);
+    }
     prevHeroHp.current = heroActor.hp;
     prevMonsterHp.current = monsterActor.hp;
-  }, [heroActor.hp, monsterActor.hp]);
+    prevHeroMp.current = heroActor.mp;
+  }, [heroActor.hp, monsterActor.hp, heroActor.mp]);
 
   const handleSelectCoping = (tactic: string) => {
     setSelectedCoping(tactic);

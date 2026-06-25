@@ -10,20 +10,21 @@ interface TeaRecipe {
 
 const TEA_RECIPES: TeaRecipe[] = [
   { id: 'mint', name: '薄荷洋甘菊茶', emoji: '🍵', cost: 30, staminaRestore: 30,
-    buffDescription: '清凉舒缓，缓解焦虑', requiredIngredients: ['peach', 'rose'] },
+    buffDescription: '清凉舒缓，缓解焦虑', requiredIngredients: ['mint', 'chamomile'] },
   { id: 'peach', name: '桃桃乌龙果粒茶', emoji: '🧋', cost: 80, staminaRestore: 60,
-    buffDescription: '果香四溢，恢复元气', requiredIngredients: ['peach', 'orange', 'tulip'] },
+    buffDescription: '果香四溢，恢复元气', requiredIngredients: ['peach', 'oolong', 'orange'] },
   { id: 'aurora', name: '星空极光薰衣草茶', emoji: '✨', cost: 150, staminaRestore: 120,
-    buffDescription: '体力满值+暴击Buff', requiredIngredients: ['cherry', 'apple', 'cosmos', 'lily'] },
+    buffDescription: '体力满值+暴击Buff', requiredIngredients: ['star', 'lavender', 'cosmos', 'lily'] },
 ];
 
 const ALL_INGREDIENTS = [
-  { id: 'peach', label: '🍑 桃子' },
-  { id: 'orange', label: '🍊 橙子' },
-  { id: 'cherry', label: '🍒 樱桃' },
-  { id: 'apple', label: '🍎 苹果' },
-  { id: 'rose', label: '🌹 玫瑰' },
-  { id: 'tulip', label: '🌷 郁金香' },
+  { id: 'mint', label: '🌿 薄荷' },
+  { id: 'chamomile', label: '🌼 洋甘菊' },
+  { id: 'peach', label: '🍑 蜜桃' },
+  { id: 'oolong', label: '🍂 乌龙' },
+  { id: 'orange', label: '🍊 甜橙' },
+  { id: 'star', label: '⭐ 星芒' },
+  { id: 'lavender', label: '💜 薰衣草' },
   { id: 'cosmos', label: '🌸 波斯菊' },
   { id: 'lily', label: '🪷 百合' },
 ];
