@@ -12,7 +12,7 @@ export default function WaterDrink({ title, description, themeText, sipCount = 5
   const handleSip = () => { playCollect(); setSips(s => Math.min(s + 1, sipCount)); };
 
   return (
-    <Modal open title={`💧 ${title}`} footer={null} onClose={onClose} width={460}>
+    <Modal open title={`💧 ${title}`} footer={null} typewriter={false} onClose={onClose} width={460}>
       <div className="flex flex-col items-center justify-center py-6 px-4 text-center w-full">
         <p className="text-sm mb-2" style={{ color: '#725d42' }}>{description}</p>
         <p className="text-xs mb-4 italic" style={{ color: '#9f927d' }}>{themeText}</p>

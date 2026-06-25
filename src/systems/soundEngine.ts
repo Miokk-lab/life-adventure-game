@@ -14,7 +14,7 @@ const PENTA = [262, 294, 330, 392, 440, 523, 587, 659, 784, 880]; // C4-C6 penta
 const PENTA_LOW = [131, 165, 196, 262, 330]; // C3-C4
 
 function getCtx(): AudioContext {
-  if (!audioCtx) { audioCtx = new AudioContext(); masterGain = audioCtx.createGain(); masterGain.gain.value = 0.08; masterGain.connect(audioCtx.destination); }
+  if (!audioCtx) { audioCtx = new AudioContext(); masterGain = audioCtx.createGain(); masterGain.gain.value = 0.18; masterGain.connect(audioCtx.destination); }
   if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
@@ -25,7 +25,7 @@ function cleanAll() {
   intervals.forEach(i => clearInterval(i)); intervals = [];
 }
 
-function osc(freq: number, type: OscillatorType = 'sine', vol = 0.03): OscillatorNode {
+function osc(freq: number, type: OscillatorType = 'sine', vol = 0.05): OscillatorNode {
   const ctx = getCtx();
   const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq;
   const g = ctx.createGain(); g.gain.value = 0;
@@ -36,7 +36,7 @@ function osc(freq: number, type: OscillatorType = 'sine', vol = 0.03): Oscillato
   return o;
 }
 
-function note(freq: number, start: number, dur: number, vol = 0.03, type: OscillatorType = 'sine') {
+function note(freq: number, start: number, dur: number, vol = 0.06, type: OscillatorType = 'sine') {
   const ctx = getCtx(); if (!masterGain || isMuted) return;
   const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq;
   const g = ctx.createGain(); g.gain.setValueAtTime(0, start);
@@ -45,7 +45,7 @@ function note(freq: number, start: number, dur: number, vol = 0.03, type: Oscill
   o.connect(g).connect(masterGain); o.start(start); o.stop(start + dur + 0.05);
 }
 
-function arp(notes: number[], interval: number, vol = 0.03) {
+function arp(notes: number[], interval: number, vol = 0.06) {
   const id = setInterval(() => {
     if (isMuted) return;
     const f = notes[Math.floor(Math.random() * notes.length)];

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal } from 'animal-island-ui';
+import { Modal, Footer } from 'animal-island-ui';
 import { motion } from 'motion/react';
 import { playResolve } from '../../systems/soundEngine';
 
@@ -15,7 +15,7 @@ export default function LetterWrite({ title, description, placeholder, onComplet
   };
 
   return (
-    <Modal open title={`✍️ ${title}`} footer={null} onClose={onClose} width={520}>
+    <Modal open title={`✍️ ${title}`} footer={null} typewriter={false} onClose={onClose} width={520}>
       <div className="flex flex-col items-center justify-center py-6 px-4 text-center w-full">
         <p className="text-sm mb-4" style={{ color: '#725d42' }}>{description}</p>
         {!sent ? (
@@ -43,6 +43,7 @@ export default function LetterWrite({ title, description, placeholder, onComplet
           </div>
         )}
       </div>
+      <Footer type="sea" seamless />
     </Modal>
   );
 }

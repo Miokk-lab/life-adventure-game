@@ -66,7 +66,7 @@ export default function VoyagePage() {
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       {/* Coconut tree Loading background overlay */}
       <div className="absolute inset-0">
-        <Loading active style={{ position: 'absolute', inset: 0, height: '100%' }} />
+        <Loading key={Math.floor(progress / 10)} active={true} className="voyage-loading" style={{ position: 'absolute', inset: 0, height: '100%' }} />
       </div>
 
       {/* Content overlay */}
@@ -96,7 +96,7 @@ export default function VoyagePage() {
       </div>
 
       {showTimeout && (
-        <Modal open title="🌊 海上风浪很大" onClose={() => setShowTimeout(false)} footer={null}>
+        <Modal open title="🌊 海上风浪很大" typewriter={false} onClose={() => setShowTimeout(false)} footer={null}>
           <div className="text-center py-4">
             <p className="text-lg font-bold mb-4" style={{ color: '#725d42' }}>最近海上风浪很大，信号不太好…</p>
             <p className="text-sm mb-6" style={{ color: '#9f927d' }}>等待继续航行，还是前往最近的小岛？</p>

@@ -57,20 +57,19 @@ html, body, #root {
   50% { mask-image: radial-gradient(circle, black 80%, transparent 80%); }
 }
 
-/* Modal sizing — wider + taller, content left-aligned within centered container */
+/* Modal sizing — wider + taller, content centered by default */
 [class*="animal-modal"] {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  min-width: 600px !important;
   max-width: 90vw !important;
   min-height: 400px !important;
 }
 [class*="animal-modal"] > * {
   width: 85% !important;
   max-width: 85% !important;
-  text-align: left !important;
+  text-align: left;
   margin-left: auto !important;
   margin-right: auto !important;
 }
@@ -128,3 +127,21 @@ html, body, #root {
 .bar-mp { background: linear-gradient(90deg, #5b9bd5, #7ab8f5); }
 .bar-stamina { background: linear-gradient(90deg, #6fba2c, #8cd64a); }
 .bar-exp { background: linear-gradient(90deg, #f5c31c, #ffd54f); }
+
+/* Bounce animation for active page tabs */
+@keyframes tabBounce {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  60% { transform: scale(0.97); }
+  80% { transform: scale(1.03); }
+}
+
+.animal-tabItem-Ehph4.animal-active-AoX4Y {
+  animation: tabBounce 0.5s ease-out;
+}
+
+/* Voyage page: larger island scene */
+.voyage-loading .illustration {
+  max-height: 350px !important;
+  max-width: 320px !important;
+}

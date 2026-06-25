@@ -10,7 +10,7 @@ export default function GratitudePetals({ title, description, petals, onComplete
   const done = texts.every(t => t.trim().length > 0);
 
   return (
-    <Modal open title={`🙏 ${title}`} footer={null} onClose={onClose} width={500}>
+    <Modal open title={`🙏 ${title}`} footer={null} typewriter={false} onClose={onClose} width={500}>
       <div className="flex flex-col items-center justify-center py-6 px-4 text-center w-full">
         <p className="text-sm mb-4" style={{ color: '#725d42' }}>{description}</p>
         <div className="flex justify-center gap-4 mb-4 flex-wrap">

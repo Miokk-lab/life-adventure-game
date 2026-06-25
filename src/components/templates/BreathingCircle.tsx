@@ -38,7 +38,7 @@ export default function BreathingCircle({ title, description, themeText, onCompl
   const labels: Record<string, string> = { inhale: '🌬️ 吸气', hold: '🧘 屏气', exhale: '🍃 呼气', rest: '☁️ 休息' };
 
   return (
-    <Modal open title={`🍃 ${title}`} footer={null} onClose={onClose} width={480}>
+    <Modal open title={`🍃 ${title}`} footer={null} typewriter={false} onClose={onClose} width={480}>
       <div className="flex flex-col items-center justify-center py-6 px-4 text-center w-full">
         <p className="text-sm mb-2" style={{ color: '#725d42' }}>{description}</p>
         <p className="text-xs mb-4 italic" style={{ color: '#9f927d' }}>{themeText}</p>

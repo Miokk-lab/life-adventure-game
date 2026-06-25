@@ -2,7 +2,6 @@ import { useGameStore } from '../../stores/useGameStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
 import { Button, Card, Title, Typewriter } from 'animal-island-ui';
 import { motion } from 'motion/react';
-import ItemIcon from '../shared/ItemIcon';
 
 export default function AnalysisPage() {
   const navigateTo = useGameStore((s) => s.navigateTo);
@@ -39,7 +38,7 @@ export default function AnalysisPage() {
               </div>
               <div className="flex justify-center my-4">
                 <div className="w-32 h-32 rounded-full border-4 border-[#725D42] bg-[#F2EDE0] flex items-center justify-center overflow-hidden">
-                  <ItemIcon emoji="👹" size={80} />
+                  {monster?.imageUrl ? <img src={monster.imageUrl} alt={monster.name} className="w-full h-full object-cover" /> : <span className="text-6xl">👹</span>}
                 </div>
               </div>
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
@@ -137,7 +136,7 @@ export default function AnalysisPage() {
               </div>
               <div className="flex justify-center my-4">
                 <div className="w-32 h-32 rounded-full border-4 border-[#725D42] bg-[#F2EDE0] flex items-center justify-center overflow-hidden">
-                  <ItemIcon emoji="🧑‍🌾" size={80} />
+                  {hero?.imageUrl ? <img src={hero.imageUrl} alt={hero.name} className="w-full h-full object-cover" /> : <span className="text-6xl">🧑‍🌾</span>}
                 </div>
               </div>
               <div className="space-y-2">

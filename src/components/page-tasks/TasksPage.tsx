@@ -39,7 +39,7 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Weekly Progress */}
       {weeklyProgress && (
         <Card color="app-teal">
@@ -67,21 +67,19 @@ export default function TasksPage() {
       {tasks.length === 0 ? (
         <Card className="text-center py-8"><p className="text-sm" style={{ color: '#c4b89e' }}>任务加载中…</p></Card>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
           {tasks.map((task, i) => (
-            <motion.div key={task.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-              <Card color={task.completed ? 'app-teal' : 'default'}>
-                <Collapse question={<span className={task.completed?'line-through opacity-60':''}>{task.completed?'✅':'⬜'} {task.description}</span>}
-                  answer={<div>
-                    <div className="flex gap-2 text-xs font-semibold mb-2">
-                      {task.reward.exp && <span style={{ color: '#f5c31c' }}>⭐ +{task.reward.exp} EXP</span>}
-                      {task.reward.coins && <span style={{ color: '#b3a046' }}>🪙 +{task.reward.coins}</span>}
-                    </div>
-                    <Button type="primary" size="small" onClick={() => launchGame(task)}>🎮 {task.completed ? '再来一次' : '开始小游戏'}</Button>
-                    {task.completed && <span className="text-[10px] ml-2 font-bold" style={{ color: '#6fba2c' }}>已完成 ✓ (可重复)</span>}
-                  </div>} />
-              </Card>
-            </motion.div>
+            <Card key={task.id} color={task.completed ? 'app-teal' : 'default'}>
+              <Collapse question={<span className={task.completed?'line-through opacity-60':''}>{task.completed?'✅':'⬜'} {task.description}</span>}
+                answer={<div>
+                  <div className="flex gap-2 text-xs font-semibold mb-2">
+                    {task.reward.exp && <span style={{ color: '#f5c31c' }}>⭐ +{task.reward.exp} EXP</span>}
+                    {task.reward.coins && <span style={{ color: '#b3a046' }}>🪙 +{task.reward.coins}</span>}
+                  </div>
+                  <Button type="primary" size="small" onClick={() => launchGame(task)}>🎮 {task.completed ? '再来一次' : '开始小游戏'}</Button>
+                  {task.completed && <span className="text-[10px] ml-2 font-bold" style={{ color: '#6fba2c' }}>已完成 ✓ (可重复)</span>}
+                </div>} />
+            </Card>
           ))}
         </div>
       )}

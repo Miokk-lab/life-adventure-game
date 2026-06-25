@@ -31,7 +31,7 @@ export default function SortBaskets({ title, description, items, baskets, onComp
   };
 
   return (
-    <Modal open title={`🧺 ${title}`} footer={null} onClose={onClose} width={520}>
+    <Modal open title={`🧺 ${title}`} footer={null} typewriter={false} onClose={onClose} width={520}>
       <div className="flex flex-col items-center justify-center py-6 px-4 text-center w-full">
         <p className="text-sm mb-4" style={{ color: '#725d42' }}>{description}</p>
         {!done ? (

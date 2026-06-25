@@ -73,7 +73,7 @@ export default function GameScreen() {
       <Divider type="wave-yellow" />
       {/* Level-Up Celebration Modal */}
       {showLevelUp && (
-        <Modal open title="🎉 升级了！" footer={null} onClose={dismissLevelUp} width={480}>
+        <Modal open title="🎉 升级了！" typewriter={false} footer={null} onClose={dismissLevelUp} width={480}>
           <motion.div className="text-center py-8" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
             <motion.div className="text-7xl mb-4" animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }} transition={{ duration: 1, repeat: Infinity }}>🌟</motion.div>
             <p className="text-2xl font-extrabold" style={{ color: '#f5c31c' }}>升级到 Lv.{chapter}！</p>

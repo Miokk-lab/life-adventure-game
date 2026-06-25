@@ -57,7 +57,7 @@ export default function BattlePage() {
   useEffect(() => {
     if (!initialized.current && heroData && monsterData && battleSkills.length > 0) {
       initialized.current = true;
-      initBattle(heroData.name, heroData.imageUrl, monsterData.name, monsterData.imageUrl, isFirstBattle ? 300 : 150, battleSkills);
+      initBattle(heroData.name, heroData.imageUrl, monsterData.name, monsterData.imageUrl, 100, battleSkills);
     }
   }, [heroData, monsterData, battleSkills]);
 
@@ -90,7 +90,8 @@ export default function BattlePage() {
     setSelectedCoping(tactic);
     const skillMap: Record<string, string> = { avoid: 'turtle', resist: 'sloth', adapt: 'tiger', challenge: 'tiger', transform: 'snake' };
     const animal = skillMap[tactic];
-    const skill = availableSkills.find(s => s.animal === animal && s.level <= chapter);
+    const skillsOfAnimal = availableSkills.filter(s => s.animal === animal && s.level <= chapter);
+    const skill = skillsOfAnimal.sort((a, b) => b.level - a.level)[0];
     if (skill) selectSkill(skill.id);
     else if (availableSkills.length > 0) selectSkill(availableSkills[0].id);
     playCollect();
@@ -127,8 +128,10 @@ export default function BattlePage() {
           <div className="grid grid-cols-2 gap-4">
             <Card color="app-teal">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl"
-                  style={{ background: '#e6f9f6', border: '3px solid #19c8b9' }}>🦸</div>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+                  style={{ background: '#e6f9f6', border: '3px solid #19c8b9' }}>
+                  {heroActor.imageUrl ? <img src={heroActor.imageUrl} alt={heroActor.name} className="w-full h-full object-cover" /> : <span className="text-2xl">🦸</span>}
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-extrabold text-xs truncate" style={{ color: '#fff9e3' }}>{heroActor.name}</p>
                 </div>
@@ -138,8 +141,10 @@ export default function BattlePage() {
             </Card>
             <Card color="app-red">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl"
-                  style={{ background: '#fde8e8', border: '3px solid #e05a5a' }}>👾</div>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+                  style={{ background: '#fde8e8', border: '3px solid #e05a5a' }}>
+                  {monsterActor.imageUrl ? <img src={monsterActor.imageUrl} alt={monsterActor.name} className="w-full h-full object-cover" /> : <span className="text-2xl">👾</span>}
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-extrabold text-xs truncate" style={{ color: '#fff9e3' }}>{monsterActor.name}</p>
                 </div>
@@ -153,9 +158,11 @@ export default function BattlePage() {
             style={{ minHeight: 220, background: 'linear-gradient(180deg, #e8f5e9 0%, #fff8e7 40%, #fce4ec 100%)', border: '4px solid #725D42' }}>
             {/* Hero side */}
             <div className="absolute left-4 flex flex-col items-center gap-1">
-              <motion.div className="text-5xl"
+              <motion.div
                 animate={phase === 'player-action' ? { x: [0, 50, 0], scale: [1, 1.3, 1] } : phase === 'enemy-turn' ? { x: [0, -15, 0] } : {}}
-                transition={{ duration: phase === 'player-action' ? 0.6 : 0.4 }}>🦸</motion.div>
+                transition={{ duration: phase === 'player-action' ? 0.6 : 0.4 }}>
+                {heroActor.imageUrl ? <img src={heroActor.imageUrl} alt={heroActor.name} className="w-16 h-16 object-contain" /> : <span className="text-5xl">🦸</span>}
+              </motion.div>
               {/* Hero attack label */}
               {phase === 'player-action' && lastHeroAction && (
                 <motion.span initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
@@ -181,9 +188,11 @@ export default function BattlePage() {
 
             {/* Monster side */}
             <div className="absolute right-4 flex flex-col items-center gap-1">
-              <motion.div className="text-5xl"
+              <motion.div
                 animate={phase === 'enemy-turn' ? { x: [0, -50, 0], scale: [1, 1.3, 1] } : phase === 'player-action' ? { x: [0, 15, 0], scale: [1, 0.85, 1] } : {}}
-                transition={{ duration: phase === 'enemy-turn' ? 0.6 : 0.4 }}>👾</motion.div>
+                transition={{ duration: phase === 'enemy-turn' ? 0.6 : 0.4 }}>
+                {monsterActor.imageUrl ? <img src={monsterActor.imageUrl} alt={monsterActor.name} className="w-16 h-16 object-contain" /> : <span className="text-5xl">👾</span>}
+              </motion.div>
               {/* Monster takes damage */}
               {phase === 'player-action' && lastHeroAction && (
                 <motion.span initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
@@ -266,20 +275,20 @@ export default function BattlePage() {
 
       {/* Victory */}
       {phase === 'victory' && (
-        <Modal open title="🎉 净化成功！" footer={null} onClose={() => {}}>
+        <Modal open title="🎉 净化成功！" typewriter={false} footer={null} onClose={() => {}}>
           <div className="text-center py-4"><p className="text-lg font-bold mb-4" style={{ color: '#6fba2c' }}>心魔被净化了！</p>
             <Button type="primary" size="large" onClick={() => { addCoins(50); addExp(50); playResolve(); navigateTo('victory'); }}>🌈 前往丰收祭 (+50🪙 +50EXP)</Button></div>
         </Modal>
       )}
       {phase === 'defeat' && isFirstBattle && (
-        <Modal open title="💨 能量耗尽…" footer={null} onClose={() => {}}>
+        <Modal open title="💨 能量耗尽…" typewriter={false} footer={null} onClose={() => {}}>
           <div className="text-center py-4"><p className="text-lg font-bold mb-4" style={{ color: '#e05a5a' }}>呼……心魔太强了！</p>
             <p className="text-sm mb-6" style={{ color: '#725d42' }}>需要在岛上完成日常任务，积蓄能量后再来挑战。</p>
             <Button type="primary" size="large" onClick={() => { resetBattle(); navigateTo('tasks'); }}>📋 去做日常任务</Button></div>
         </Modal>
       )}
       {phase === 'defeat' && !isFirstBattle && (
-        <Modal open title="💔 战斗失败" footer={null} onClose={() => {}}>
+        <Modal open title="💔 战斗失败" typewriter={false} footer={null} onClose={() => {}}>
           <div className="text-center py-4"><p className="text-sm mb-6" style={{ color: '#725d42' }}>去静心营地恢复HP，或泡杯花茶再来！</p>
             <div className="flex gap-3 justify-center">
               <Button type="default" onClick={() => { resetBattle(); navigateTo('minigames'); }}>🏕️ 静心营地</Button>

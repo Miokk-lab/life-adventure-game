@@ -21,10 +21,18 @@ export default function LoginPage() {
 
   const handleLogin = () => {
     if (!loginEmail.trim() || !loginPass.trim()) {
-      setError('请填入你的邮箱和密码，小岛守卫才能为你打开森林大门哦~');
+      setError('请填入你的代号和密码，小岛守卫才能为你打开森林大门哦~');
       return;
     }
-    setUser({ id: 'local', email: loginEmail.trim(), nickname: loginEmail.split('@')[0] || '岛民', avatarUrl: '', islandName: '心灵岛' });
+    const input = loginEmail.trim();
+    const isEmail = input.includes('@');
+    setUser({
+      id: 'local',
+      email: isEmail ? input : '',
+      nickname: isEmail ? input.split('@')[0] : input,
+      avatarUrl: '',
+      islandName: '心灵岛',
+    });
     navigateTo('worry');
   };
 
@@ -44,9 +52,9 @@ export default function LoginPage() {
       children: (
         <div className="space-y-4 text-left">
           <div>
-            <label className="text-sm font-bold mb-1 block" style={{ color: '#725d42' }}>村民代号 (邮箱)</label>
+            <label className="text-sm font-bold mb-1 block" style={{ color: '#725d42' }}>村民代号 (邮箱/昵称)</label>
             <Input value={loginEmail} onChange={e => { setLoginEmail(e.target.value); setError(''); }}
-              placeholder="villager@island.life" shadow size="large"
+              placeholder="邮箱地址 或 昵称" shadow size="large"
               prefix={<ItemIcon emoji="📬" size={18} />} />
           </div>
           <div>

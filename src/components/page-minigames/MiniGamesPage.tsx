@@ -68,20 +68,20 @@ export default function MiniGamesPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="text-center p-6 rounded-3xl" style={{ background: 'linear-gradient(180deg, #1a1a2e, #16213e, #0f3460)', border: '3px solid #e8e2d6' }}>
-        <div className="text-5xl mb-3">🏕️✨</div>
-        <h2 className="text-2xl font-black mb-2" style={{ color: '#f8f8f0' }}>星空下的露营篝火</h2>
+    <div className="space-y-3">
+      <div className="text-center p-4 rounded-3xl" style={{ background: 'linear-gradient(180deg, #1a1a2e, #16213e, #0f3460)', border: '3px solid #e8e2d6' }}>
+        <div className="text-4xl mb-2">🏕️✨</div>
+        <h2 className="text-xl font-black mb-1" style={{ color: '#f8f8f0' }}>星空下的露营篝火</h2>
         <p className="text-sm" style={{ color: '#c4b89e' }}>选一个方式，给自己放松的机会 (+15 EXP)</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {games.map((game) => (
           <motion.div key={game.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Card color="app-yellow" className="cursor-pointer text-center" onClick={() => handlePlay(game)}>
-              <span className="text-4xl block mb-2">{game.emoji}</span>
+              <span className="text-3xl block mb-1">{game.emoji}</span>
               <h3 className="font-extrabold text-sm mb-1" style={{ color: '#725d42' }}>{game.name}</h3>
-              <p className="text-xs mb-3 px-2" style={{ color: '#9f927d' }}>{game.description}</p>
+              <p className="text-xs mb-2 px-2" style={{ color: '#9f927d' }}>{game.description}</p>
               <div className="flex justify-center gap-4 text-xs font-bold">
                 <span style={{ color: '#e05a5a' }}>❤️ +{game.hpRestore}</span>
                 <span style={{ color: '#f5c31c' }}>⭐ +15 EXP</span>

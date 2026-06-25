@@ -23,7 +23,7 @@ export default function VictoryPage() {
           {hero ? (
             <Card color="app-teal" className="mb-3">
               <div className="flex items-center gap-3">
-                <span className="text-4xl">🦸</span>
+                {hero.imageUrl ? <img src={hero.imageUrl} alt={hero.name} className="w-12 h-12 object-contain" /> : <span className="text-4xl">🦸</span>}
                 <div>
                   <h3 className="font-extrabold text-sm" style={{ color: '#fff9e3' }}>{hero.name}</h3>
                   <p className="text-xs break-words" style={{ color: '#725d42' }}>{hero.story}</p>
@@ -42,7 +42,7 @@ export default function VictoryPage() {
           {monster ? (
             <Card color="app-red" className="mb-3">
               <div className="flex items-center gap-3">
-                <span className="text-4xl">👾</span>
+                {monster.imageUrl ? <img src={monster.imageUrl} alt={monster.name} className="w-12 h-12 object-contain" /> : <span className="text-4xl">👾</span>}
                 <div>
                   <h3 className="font-extrabold text-sm" style={{ color: '#fff9e3' }}>{monster.name}</h3>
                   <p className="text-xs break-words" style={{ color: '#725d42' }}>{monster.story}</p>

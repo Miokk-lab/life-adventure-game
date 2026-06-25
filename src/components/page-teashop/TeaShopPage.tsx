@@ -211,7 +211,7 @@ export default function TeaShopPage() {
       )}
 
       {/* Brewed tea reveal */}
-      <Modal open={brewed !== null} title="☕ 花茶泡好了！" footer={null} onClose={() => setBrewed(null)}>
+      <Modal open={brewed !== null} title="☕ 花茶泡好了！" typewriter={false} footer={null} onClose={() => setBrewed(null)}>
         <div className="text-center py-6 px-4">
           <motion.div className="text-6xl mb-4" animate={{ scale: [1, 1.3, 1], rotate: [0, -5, 5, 0] }}>
             {brewed?.emoji ?? '🍵'}
