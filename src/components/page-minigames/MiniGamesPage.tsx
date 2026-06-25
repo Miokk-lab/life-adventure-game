@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
 import { useAdventureStore } from '../../stores/useAdventureStore';
+import { useGameStore } from '../../stores/useGameStore';
 import { Card } from 'animal-island-ui';
 import { motion } from 'motion/react';
 import BreathingMiniGame from '../minigames/BreathingMiniGame';
 import ShellCollectGame from '../minigames/ShellCollectGame';
 import CloudMiniGame from '../minigames/CloudMiniGame';
 import SortingMiniGame from '../minigames/SortingMiniGame';
+import { getWorryContent } from '../../data/worryContent';
 
-interface GameInfo {
-  id: string; name: string; emoji: string; description: string;
-  hpRestore: number; staminaCost: number; component: React.ComponentType<any>;
-}
-
-const GAMES: GameInfo[] = [
-  { id: 'breathing', name: '呼吸法环', emoji: '🍃', description: '跟随节奏深呼吸，3个循环平复焦虑。', hpRestore: 20, staminaCost: 0, component: BreathingMiniGame },
-  { id: 'shell_collect', name: '贝壳收集', emoji: '🐚', description: '在海滩上收集美丽的贝壳。', hpRestore: 20, staminaCost: 5, component: ShellCollectGame },
-  { id: 'cloud', name: '乌云吹散', emoji: '☁️', description: '把烦恼写在云上，让风吹散。', hpRestore: 20, staminaCost: 0, component: CloudMiniGame },
-  { id: 'sorting', name: '心灵整理', emoji: '🧺', description: '把思绪分类到正确的篮子里。', hpRestore: 20, staminaCost: 0, component: SortingMiniGame },
-];
+const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
+  breathing: BreathingMiniGame,
+  shell_collect: ShellCollectGame,
+  cloud: CloudMiniGame,
+  sorting: SortingMiniGame,
+};
 
 type ActiveGame = { type: string; taskTitle: string; taskDescription: string } | null;
 
@@ -26,9 +23,18 @@ export default function MiniGamesPage() {
   const consumeStamina = useAdventureStore((s) => s.consumeStamina);
   const stamina = useAdventureStore((s) => s.stamina);
   const addCoins = useAdventureStore((s) => s.addCoins);
+  const worryType = useGameStore((s) => s.worryType);
   const [activeGame, setActiveGame] = useState<ActiveGame>(null);
 
-  const handlePlay = (game: GameInfo) => {
+  const worryContent = getWorryContent(worryType ?? 'emotion_management');
+  const games = worryContent.miniGames.map(g => ({
+    ...g,
+    hpRestore: 20,
+    staminaCost: g.id === 'shell_collect' ? 5 : 0,
+    component: COMPONENT_MAP[g.id] ?? BreathingMiniGame,
+  }));
+
+  const handlePlay = (game: typeof games[number]) => {
     if (game.staminaCost > 0 && stamina < game.staminaCost) return;
     if (game.staminaCost > 0) consumeStamina(game.staminaCost);
     setActiveGame({
@@ -38,7 +44,7 @@ export default function MiniGamesPage() {
     });
   };
 
-  const handleComplete = (game: GameInfo) => {
+  const handleComplete = (game: typeof games[number]) => {
     restoreHp(game.hpRestore);
     addCoins(5);
     setActiveGame(null);
@@ -60,7 +66,7 @@ export default function MiniGamesPage() {
 
       {/* Game grid */}
       <div className="grid md:grid-cols-2 gap-4">
-        {GAMES.map((game) => (
+        {games.map((game) => (
           <motion.div key={game.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Card color="app-yellow" className="cursor-pointer text-center" onClick={() => handlePlay(game)}>
               <span className="text-4xl block mb-2">{game.emoji}</span>
@@ -77,38 +83,12 @@ export default function MiniGamesPage() {
       </div>
 
       {/* Mini-game modals */}
-      {activeGame && activeGame.type === 'breathing' && (
-        <BreathingMiniGame
-          taskTitle={activeGame.taskTitle}
-          taskDescription={activeGame.taskDescription}
-          onComplete={() => handleComplete(GAMES.find(g => g.id === 'breathing')!)}
-          onClose={handleClose}
-        />
-      )}
-      {activeGame && activeGame.type === 'shell_collect' && (
-        <ShellCollectGame
-          taskTitle={activeGame.taskTitle}
-          taskDescription={activeGame.taskDescription}
-          onComplete={() => handleComplete(GAMES.find(g => g.id === 'shell_collect')!)}
-          onClose={handleClose}
-        />
-      )}
-      {activeGame && activeGame.type === 'cloud' && (
-        <CloudMiniGame
-          taskTitle={activeGame.taskTitle}
-          taskDescription={activeGame.taskDescription}
-          onComplete={() => handleComplete(GAMES.find(g => g.id === 'cloud')!)}
-          onClose={handleClose}
-        />
-      )}
-      {activeGame && activeGame.type === 'sorting' && (
-        <SortingMiniGame
-          taskTitle={activeGame.taskTitle}
-          taskDescription={activeGame.taskDescription}
-          onComplete={() => handleComplete(GAMES.find(g => g.id === 'sorting')!)}
-          onClose={handleClose}
-        />
-      )}
+      {activeGame && (() => {
+        const Comp = COMPONENT_MAP[activeGame.type] ?? BreathingMiniGame;
+        const g = games.find(g => g.id === activeGame!.type);
+        return <Comp taskTitle={activeGame.taskTitle} taskDescription={activeGame.taskDescription}
+          onComplete={() => { if (g) handleComplete(g); }} onClose={handleClose} />;
+      })()}
     </div>
   );
 }

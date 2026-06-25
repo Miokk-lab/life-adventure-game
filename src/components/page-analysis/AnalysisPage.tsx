@@ -35,26 +35,24 @@ export default function AnalysisPage() {
                   {monster?.name ?? '未知心魔'}
                 </h3>
                 <span className="text-[10px] px-2 py-0.5 rounded-full border-2 border-[#725D42] bg-[#FFEAEA]"
-                  style={{ color: '#C62828' }}>
-                  心魔
-                </span>
+                  style={{ color: '#C62828' }}>心魔</span>
               </div>
               <div className="flex justify-center my-4">
                 <div className="w-32 h-32 rounded-full border-4 border-[#725D42] bg-[#F2EDE0] flex items-center justify-center overflow-hidden">
                   <ItemIcon emoji="👹" size={80} />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
                 <div className="p-2 rounded-xl border-2 border-dashed border-[#C4B89E]">
                   <p className="text-[10px] font-black" style={{ color: '#A08E75' }}>攻击习性</p>
                   {(monster?.attacks ?? ['未知攻击模式']).map((a, i) => (
-                    <p key={i} className="text-xs mt-0.5" style={{ color: '#725d42' }}>• {a.length > 60 ? a.slice(0, 57) + '…' : a}</p>
+                    <p key={i} className="text-xs mt-0.5 break-words" style={{ color: '#725d42' }}>• {a}</p>
                   ))}
                 </div>
                 <div className="p-2 rounded-xl bg-[#E8F5E9]">
                   <p className="text-[10px] font-black" style={{ color: '#3A8D63' }}>弱点</p>
-                  <p className="text-xs font-bold" style={{ color: '#2E7D32' }}>
-                    {monster?.story?.slice(0, 120) ?? '探索中…'}
+                  <p className="text-xs font-bold break-words" style={{ color: '#2E7D32' }}>
+                    {monster?.story ?? '探索中…'}
                   </p>
                 </div>
               </div>
@@ -104,10 +102,10 @@ export default function AnalysisPage() {
                   <p className="text-[10px] font-black flex items-center gap-1" style={{ color: '#3A8D63' }}>
                     🔍 核心挑战
                   </p>
-                  <div className="text-xs font-bold ml-3" style={{ color: '#2E7D32' }}>
+                  <div className="text-xs font-bold ml-3 max-h-[200px] overflow-y-auto break-words" style={{ color: '#2E7D32' }}>
                     {cbtAnalysis ? (
-                      <Typewriter speed={30}>
-                        <span>{cbtAnalysis.slice(0, 120)}{cbtAnalysis.length > 120 && '…'}</span>
+                      <Typewriter speed={20}>
+                        <span>{cbtAnalysis}</span>
                       </Typewriter>
                     ) : '探索中…'}
                   </div>

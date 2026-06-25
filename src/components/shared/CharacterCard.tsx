@@ -65,7 +65,7 @@ export default function CharacterCard({
         </p>
       )}
 
-      <p className="text-sm leading-relaxed mt-2" style={{ color: '#725d42' }}>
+      <p className="text-sm leading-relaxed mt-2 max-h-[150px] overflow-y-auto break-words" style={{ color: '#725d42' }}>
         {story}
       </p>
 

@@ -1,21 +1,14 @@
 import { useState } from 'react';
 import { useAdventureStore } from '../../stores/useAdventureStore';
+import { useGameStore } from '../../stores/useGameStore';
 import { Button, Card, Modal } from 'animal-island-ui';
 import { motion } from 'motion/react';
+import { getWorryContent } from '../../data/worryContent';
 
 interface TeaRecipe {
   id: string; name: string; emoji: string; cost: number; staminaRestore: number;
   buffDescription: string; requiredIngredients: string[];
 }
-
-const TEA_RECIPES: TeaRecipe[] = [
-  { id: 'mint', name: '薄荷洋甘菊茶', emoji: '🍵', cost: 30, staminaRestore: 30,
-    buffDescription: '清凉舒缓，缓解焦虑', requiredIngredients: ['mint', 'chamomile'] },
-  { id: 'peach', name: '桃桃乌龙果粒茶', emoji: '🧋', cost: 80, staminaRestore: 60,
-    buffDescription: '果香四溢，恢复元气', requiredIngredients: ['peach', 'oolong', 'orange'] },
-  { id: 'aurora', name: '星空极光薰衣草茶', emoji: '✨', cost: 150, staminaRestore: 120,
-    buffDescription: '体力满值+暴击Buff', requiredIngredients: ['star', 'lavender', 'cosmos', 'lily'] },
-];
 
 const ALL_INGREDIENTS = [
   { id: 'mint', label: '🌿 薄荷' },
@@ -30,6 +23,13 @@ const ALL_INGREDIENTS = [
 ];
 
 export default function TeaShopPage() {
+  const worryType = useGameStore((s) => s.worryType);
+  const worryContent = getWorryContent(worryType ?? 'emotion_management');
+  const TEA_RECIPES: TeaRecipe[] = worryContent.teas.map((t, i) => ({
+    id: `tea_${i}`, name: t.name, emoji: t.emoji, cost: t.cost,
+    staminaRestore: t.stamina, buffDescription: t.desc, requiredIngredients: t.ingredients,
+  }));
+
   const spendCoins = useAdventureStore((s) => s.spendCoins);
   const restoreStamina = useAdventureStore((s) => s.restoreStamina);
   const coins = useAdventureStore((s) => s.coins);

@@ -26,7 +26,7 @@ export default function VictoryPage() {
                 <span className="text-4xl">🦸</span>
                 <div>
                   <h3 className="font-extrabold text-sm" style={{ color: '#fff9e3' }}>{hero.name}</h3>
-                  <p className="text-xs" style={{ color: '#725d42' }}>{hero.story.slice(0, 80)}…</p>
+                  <p className="text-xs break-words" style={{ color: '#725d42' }}>{hero.story}</p>
                 </div>
               </div>
             </Card>
@@ -45,7 +45,7 @@ export default function VictoryPage() {
                 <span className="text-4xl">👾</span>
                 <div>
                   <h3 className="font-extrabold text-sm" style={{ color: '#fff9e3' }}>{monster.name}</h3>
-                  <p className="text-xs" style={{ color: '#725d42' }}>{monster.story.slice(0, 80)}…</p>
+                  <p className="text-xs break-words" style={{ color: '#725d42' }}>{monster.story}</p>
                 </div>
               </div>
             </Card>
@@ -84,7 +84,7 @@ export default function VictoryPage() {
         <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="mb-8">
           <Card color="app-yellow" pattern="app-teal">
             <Title size="middle" color="brown">📖 哲理升华</Title>
-            <p className="mt-4 text-sm leading-relaxed" style={{ color: '#725d42' }}>{victoryText.slice(0, 300)}{victoryText.length > 300 && '…'}</p>
+            <div className="mt-4 text-sm leading-relaxed max-h-[200px] overflow-y-auto break-words" style={{ color: '#725d42' }}>{victoryText}</div>
           </Card>
         </motion.div>
       )}
