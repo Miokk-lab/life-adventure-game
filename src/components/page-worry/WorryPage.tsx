@@ -28,23 +28,14 @@ export default function WorryPage() {
     recognition.interimResults = true;
     recognition.continuous = false;
     recognitionRef.current = recognition;
-    let interim = '';
 
     recognition.onresult = (event: any) => {
-      let transcript = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        transcript += result[0].transcript;
-        if (result.isFinal) {
-          setText(prev => {
-            const combined = prev + result[0].transcript;
-            return combined.slice(0, MAX_WORRY_LENGTH);
-          });
-          interim = '';
-        } else {
-          interim = result[0].transcript;
-        }
-      }
+      const transcript = Array.from(event.results)
+        .map((r: any) => r[0].transcript).join('');
+      setText(prev => {
+        const combined = prev + transcript;
+        return combined.slice(0, MAX_WORRY_LENGTH);
+      });
     };
     recognition.onend = () => { setIsListening(false); };
     recognition.onerror = () => { setIsListening(false); };

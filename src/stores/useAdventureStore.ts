@@ -108,12 +108,14 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
   completeTask: (taskId) =>
     set((s) => {
       const task = s.tasks.find((t) => t.id === taskId);
-      if (!task || task.completed) return s;
+      if (!task || task.completed || s.stamina < 10) return s;
       const reward = task.reward;
       return {
         tasks: s.tasks.map((t) => (t.id === taskId ? { ...t, completed: true, progress: t.target } : t)),
         exp: s.exp + (reward.exp ?? 0),
-        coins: s.coins + (reward.coins ?? 0),
+        coins: s.coins + 20,
+        mp: Math.min(s.maxMp, s.mp + 5),
+        stamina: s.stamina - 10,
       };
     }),
 

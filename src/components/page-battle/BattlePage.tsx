@@ -27,6 +27,7 @@ export default function BattlePage() {
   const consumeStamina = useAdventureStore((s) => s.consumeStamina);
   const updateHp = useAdventureStore((s) => s.updateHp);
   const updateMp = useAdventureStore((s) => s.updateMp);
+  const addCoins = useAdventureStore((s) => s.addCoins);
 
   const phase = useBattleStore((s) => s.phase);
   const heroActor = useBattleStore((s) => s.hero);
@@ -94,12 +95,19 @@ export default function BattlePage() {
     playCollect();
   };
 
+  // One-time stamina cost to enter battle
+  useEffect(() => {
+    if (initialized.current && phase === 'player-turn' && turn === 1) {
+      consumeStamina(20);
+    }
+  }, [phase, turn]);
+
   const handleExecute = () => {
-    if (!selectedCoping || stamina < 10) return;
+    if (!selectedCoping) return;
     const skill = availableSkills.find(s => s.id === selectedSkillId);
-    setArenaMsg({ hero: skill?.name ?? '攻击', monsterDmg: undefined });
+    if (!skill || heroActor.mp < skill.mpCost) return;
+    setArenaMsg({ hero: skill.name, monsterDmg: undefined });
     executeTurn();
-    consumeStamina(10);
     setSelectedCoping(null);
     playHurt();
   };
@@ -221,13 +229,13 @@ export default function BattlePage() {
                         </p>
                       </>
                     )}
-                    {stamina < 10 && (
-                      <p className="text-xs mt-1 font-bold animate-pulse" style={{ color: '#e05a5a' }}>⚠️ 体力不足！去花茶店补充。</p>
+                    {heroActor.mp < (selectedSkill?.mpCost ?? 99) && (
+                      <p className="text-xs mt-1 font-bold animate-pulse" style={{ color: '#e05a5a' }}>⚠️ MP不足！去做任务恢复。</p>
                     )}
                   </Card>
                   <div className="flex gap-2">
                     <Button type="default" size="small" onClick={() => { setSelectedCoping(null); selectSkill(''); }}>重选</Button>
-                    <Button type="primary" size="large" block onClick={handleExecute} disabled={stamina < 10}>
+                    <Button type="primary" size="large" block onClick={handleExecute} disabled={!selectedSkill || heroActor.mp < selectedSkill.mpCost}>
                       <Sword size={14} className="inline mr-1" />执行战术 · 攻击心魔
                     </Button>
                   </div>
@@ -259,7 +267,7 @@ export default function BattlePage() {
       {phase === 'victory' && (
         <Modal open title="🎉 净化成功！" footer={null} onClose={() => {}}>
           <div className="text-center py-4"><p className="text-lg font-bold mb-4" style={{ color: '#6fba2c' }}>心魔被净化了！</p>
-            <Button type="primary" size="large" onClick={() => { playResolve(); navigateTo('victory'); }}>🌈 前往丰收祭</Button></div>
+            <Button type="primary" size="large" onClick={() => { addCoins(50); playResolve(); navigateTo('victory'); }}>🌈 前往丰收祭 (+50🪙)</Button></div>
         </Modal>
       )}
       {phase === 'defeat' && isFirstBattle && (

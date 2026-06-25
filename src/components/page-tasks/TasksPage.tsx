@@ -29,9 +29,7 @@ export default function TasksPage() {
     : 0;
 
   const finishTask = (task: DailyTask) => {
-    completeTask(task.id);
-    if (task.reward.coins) addCoins(task.reward.coins ?? 0);
-    restoreHp(3);
+    completeTask(task.id); // handles stamina cost, +20 shells, +5 MP, +EXP
     incrementWeeklyTask();
     playResolve();
     setActiveGame(null);

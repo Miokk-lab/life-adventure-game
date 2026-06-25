@@ -15,17 +15,8 @@ export default function AnalysisPage() {
       <div className="max-w-5xl mx-auto">
         {/* Narrative Typewriter */}
         <div className="text-center mb-8">
-          <Title size="large" color="app-blue">傅达的岛屿心理特展厅</Title>
-          <p className="text-sm mt-2 mb-4" style={{ color: '#A08E75' }}>让我们一起来看看，你的烦恼背后藏着什么样的故事…</p>
-          {cbtAnalysis && (
-            <Card className="inline-block max-w-2xl">
-              <Typewriter speed={40}>
-                <p className="text-sm leading-relaxed italic" style={{ color: '#725d42' }}>
-                  "{cbtAnalysis.slice(0, 200)}{cbtAnalysis.length > 200 && '…'}"
-                </p>
-              </Typewriter>
-            </Card>
-          )}
+          <Title size="large" color="app-blue">岛屿心理诊所</Title>
+          <p className="text-sm mt-2 mb-6" style={{ color: '#A08E75' }}>让我们一起来看看，你的烦恼背后藏着什么样的故事…</p>
         </div>
 
         {/* Bento Grid — 3 columns (ver4 RevealScreen pattern) */}
@@ -113,9 +104,13 @@ export default function AnalysisPage() {
                   <p className="text-[10px] font-black flex items-center gap-1" style={{ color: '#3A8D63' }}>
                     🔍 核心挑战
                   </p>
-                  <p className="text-xs font-bold ml-3" style={{ color: '#2E7D32' }}>
-                    {cbtAnalysis?.slice(0, 100) ?? '探索中…'}
-                  </p>
+                  <div className="text-xs font-bold ml-3" style={{ color: '#2E7D32' }}>
+                    {cbtAnalysis ? (
+                      <Typewriter speed={30}>
+                        <span>{cbtAnalysis.slice(0, 120)}{cbtAnalysis.length > 120 && '…'}</span>
+                      </Typewriter>
+                    ) : '探索中…'}
+                  </div>
                 </div>
               </div>
               <div className="text-center mt-3 pt-3 border-t border-[#FAF7EC]">

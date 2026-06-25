@@ -48,6 +48,23 @@ html, body, #root {
   border-radius: 3px;
 }
 
+/* Loading animation fix — continuous mask pulse */
+.animal-loading-mask {
+  animation: maskPulse 3s ease-in-out infinite !important;
+}
+@keyframes maskPulse {
+  0%, 100% { mask-image: radial-gradient(circle, black 0%, transparent 0%); }
+  50% { mask-image: radial-gradient(circle, black 80%, transparent 80%); }
+}
+
+/* Modal content centering */
+.animal-modal-body > * {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+  width: 100% !important;
+}
+
 /* Page transitions */
 .screen-enter {
   animation: screenIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);

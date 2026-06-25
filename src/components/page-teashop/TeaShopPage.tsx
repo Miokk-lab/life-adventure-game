@@ -164,20 +164,16 @@ export default function TeaShopPage() {
 
           {/* Ingredient shelf */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {shuffledIngredients.map((ing) => {
-              const isRequired = selectedRecipe.requiredIngredients.includes(ing.id);
-              return (
-                <motion.button key={ing.id} whileHover={{ scale: 1.15, y: -4 }} whileTap={{ scale: 0.9 }}
-                  onClick={() => handleAddIngredient(ing.id)}
-                  disabled={brewingSlots.every(s => s !== null)}
-                  className="p-2 rounded-xl border-2 bg-white/70 cursor-pointer disabled:opacity-30 relative"
-                  style={{ borderColor: isRequired ? '#6fba2c' : '#e8e2d6' }}>
-                  <span className="text-2xl">{ing.label.slice(0, 2)}</span>
-                  <div className="text-[10px] font-semibold" style={{ color: '#725d42' }}>{ing.label.slice(3)}</div>
-                  {isRequired && <span className="absolute -top-1 -right-1 text-[10px]">⭐</span>}
-                </motion.button>
-              );
-            })}
+            {shuffledIngredients.map((ing) => (
+              <motion.button key={ing.id} whileHover={{ scale: 1.15, y: -4 }} whileTap={{ scale: 0.9 }}
+                onClick={() => handleAddIngredient(ing.id)}
+                disabled={brewingSlots.every(s => s !== null)}
+                className="p-2 rounded-xl border-2 bg-white/70 cursor-pointer disabled:opacity-30"
+                style={{ borderColor: '#e8e2d6' }}>
+                <span className="text-2xl">{ing.label.slice(0, 2)}</span>
+                <div className="text-[10px] font-semibold" style={{ color: '#725d42' }}>{ing.label.slice(3)}</div>
+              </motion.button>
+            ))}
           </div>
 
           {/* Brewing slots */}
