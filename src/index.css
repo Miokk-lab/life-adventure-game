@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme {
+  --color-island-bg: #f8f8f0;
+  --color-island-text: #794f27;
+  --color-island-text-body: #725d42;
+  --color-island-primary: #19c8b9;
+  --color-island-primary-hover: #3dd4c6;
+  --color-island-primary-active: #11a89b;
+  --color-island-border: #c4b89e;
+  --color-island-border-hover: #a89878;
+  --color-island-muted: #8a7b66;
+  --color-island-secondary: #9f927d;
+  --color-island-disabled: #c4b89e;
+  --color-island-error: #e05a5a;
+  --color-island-success: #6fba2c;
+  --color-island-warning: #f5c31c;
+  --color-island-focus: #ffcc00;
+  --color-island-shadow: #bdaea0;
+
+  --font-nunito: "Nunito", sans-serif;
+  --font-sans-sc: "Noto Sans SC", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: "Nunito", "Noto Sans SC", -apple-system, "PingFang SC", sans-serif;
+  background: #f8f8f0;
+  color: #794f27;
+  overflow-x: hidden;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f0e8d8;
+}
+::-webkit-scrollbar-thumb {
+  background: #c4b89e;
+  border-radius: 3px;
+}
+
+/* Page transitions */
+.screen-enter {
+  animation: screenIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes screenIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Game button base */
+.btn-game {
+  font-family: "Nunito", "Noto Sans SC", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+}
+
+.btn-game:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* HP/MP/Stamina bar colors */
+.bar-hp { background: linear-gradient(90deg, #e05a5a, #ff6b6b); }
+.bar-mp { background: linear-gradient(90deg, #5b9bd5, #7ab8f5); }
+.bar-stamina { background: linear-gradient(90deg, #6fba2c, #8cd64a); }
+.bar-exp { background: linear-gradient(90deg, #f5c31c, #ffd54f); }
