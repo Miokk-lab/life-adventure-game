@@ -57,17 +57,20 @@ html, body, #root {
   50% { mask-image: radial-gradient(circle, black 80%, transparent 80%); }
 }
 
-/* Modal content centering — all content 80% width, centered */
+/* Modal sizing — wider + taller, content left-aligned within centered container */
 [class*="animal-modal"] {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
+  min-width: 600px !important;
+  max-width: 90vw !important;
+  min-height: 400px !important;
 }
 [class*="animal-modal"] > * {
-  width: 80% !important;
-  max-width: 80% !important;
-  text-align: center !important;
+  width: 85% !important;
+  max-width: 85% !important;
+  text-align: left !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }

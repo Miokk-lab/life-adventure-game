@@ -47,11 +47,11 @@ export default function MiniGamesPage() {
     emotion_management: {baskets:[{key:'a',label:'愤怒',emoji:'🔴'},{key:'b',label:'悲伤',emoji:'🔵'},{key:'c',label:'焦虑',emoji:'🟡'}],items:[{text:'被同事抢功时的怒火',basket:'a'},{text:'在地铁上被人踩了一脚对方没道歉',basket:'a'},{text:'最好的朋友要搬到另一个城市',basket:'b'},{text:'想起已经离开的亲人',basket:'b'},{text:'下周一要做重要的公开演讲',basket:'c'}]},
   };
   const sortData = sortDataMap[worryType ?? 'emotion_management'] ?? sortDataMap.emotion_management;
-  const games = worryContent.miniGames.map((g, i) => ({
+  const games = worryContent.miniGames.map((g) => ({
     ...g,
     hpRestore: MINIGAME_HP_RESTORE,
     staminaCost: MINIGAME_STAMINA_COST,
-    template: ['breathing','sorting','cloud'][i % 3],
+    template: g.id, // use game id directly to map to correct template
   }));
 
   const handlePlay = (game: typeof games[number]) => {

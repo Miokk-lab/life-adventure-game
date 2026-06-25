@@ -23,15 +23,19 @@ export default function TopBar() {
     <header className="sticky top-0 z-50 px-3 py-2 flex items-center gap-3 select-none"
       style={{ background: 'linear-gradient(180deg, rgba(255,253,244,0.98), rgba(248,248,240,0.94))', backdropFilter: 'blur(8px)', borderBottom: '4px solid #725D42' }}>
 
-      {/* Avatar — click to logout */}
-      <button onClick={() => navigateTo('login')} title="退出登陆" className="shrink-0">
-        <div className="w-10 h-10 rounded-full flex items-center justify-center relative overflow-hidden"
+      {/* Avatar — click to logout — nickname above, level below */}
+      <button onClick={() => navigateTo('login')} title="退出登陆" className="shrink-0 flex flex-col items-center gap-0.5">
+        <span className="text-[9px] font-extrabold leading-tight truncate max-w-[60px]" style={{ color: '#725d42' }}>
+          {user?.nickname || '岛民'}
+        </span>
+        <div className="w-9 h-9 rounded-full flex items-center justify-center relative overflow-hidden"
           style={{ background: '#F2EDE0', border: '3px solid #725D42' }}>
           {user?.avatarUrl ? <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
-            : <span className="text-xl">🧑‍🌾</span>}
-          <div className="absolute -bottom-1 -right-1 px-1 text-white text-[8px] font-black rounded-full"
-            style={{ background: '#8CC63F', border: '2px solid #725D42' }}>Lv.{chapter}</div>
+            : <span className="text-lg">🧑‍🌾</span>}
         </div>
+        <span className="text-[8px] font-black px-1 rounded-full" style={{ background: '#8CC63F', color: '#fff', border: '1.5px solid #725D42' }}>
+          Lv.{chapter}
+        </span>
       </button>
 
       {/* Bars: 2x2 grid — left: EXP+体力, right: HP+MP — 10x wider */}

@@ -42,7 +42,7 @@ export default function SortBaskets({ title, description, items, baskets, onComp
               <p className="text-lg font-extrabold" style={{ color: '#725d42' }}>{current?.text}</p>
             </motion.div>
             {feedback && <p className="text-xs font-bold mb-3" style={{ color: status === 'correct' ? '#6fba2c' : '#e05a5a' }}>{feedback}</p>}
-            <div className="flex gap-3 flex-wrap justify-center">
+            <div className="flex gap-3 flex-row justify-center">
               {baskets.map(b => (
                 <button key={b.key} onClick={() => handleSort(b.key)}
                   className="px-4 py-3 rounded-2xl border-2 font-extrabold text-sm transition-all hover:scale-105 active:scale-95"

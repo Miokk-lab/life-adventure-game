@@ -56,6 +56,8 @@ interface AdventureState {
   addToCollection: (itemId: string) => void;
   updateCompanionBond: (animal: Companion['animal'], delta: number) => void;
   incrementWeeklyTask: () => void;
+  showLevelUp: boolean;
+  dismissLevelUp: () => void;
   reset: () => void;
 }
 
@@ -87,6 +89,7 @@ const initialState = {
     shellsEarnedThisWeek: 0,
     weeklyBonusClaimed: false,
   },
+  showLevelUp: false,
 };
 
 export const useAdventureStore = create<AdventureState>((set, get) => ({
@@ -147,9 +150,10 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
     set((s) => {
       const newExp = s.exp + amount;
       let chapter = s.chapter;
-      if (newExp >= EXP_L2 && chapter < 3) chapter = 3;
-      else if (newExp >= EXP_L1 && chapter < 2) chapter = 2;
-      return { exp: newExp, chapter };
+      let showLevelUp = false;
+      if (newExp >= EXP_L2 && chapter < 3) { chapter = 3; showLevelUp = true; }
+      else if (newExp >= EXP_L1 && chapter < 2) { chapter = 2; showLevelUp = true; }
+      return { exp: newExp, chapter, showLevelUp };
     }),
 
   setChapter: (ch) => set({ chapter: ch }),
@@ -173,5 +177,6 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
       },
     })),
 
+  dismissLevelUp: () => set({ showLevelUp: false }),
   reset: () => set(initialState),
 }));
