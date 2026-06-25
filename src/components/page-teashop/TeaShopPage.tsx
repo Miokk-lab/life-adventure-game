@@ -38,8 +38,13 @@ export default function TeaShopPage() {
   const [brewingSlots, setBrewingSlots] = useState<(string | null)[]>([null, null, null, null]);
   const [brewed, setBrewed] = useState<TeaRecipe | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  // Shuffle ingredients on mount and each time a recipe is selected
+  const [shuffledIngredients, setShuffledIngredients] = useState(() =>
+    [...ALL_INGREDIENTS].sort(() => Math.random() - 0.5)
+  );
 
   const handleSelect = (recipe: TeaRecipe) => {
+    setShuffledIngredients([...ALL_INGREDIENTS].sort(() => Math.random() - 0.5));
     if (coins < recipe.cost) {
       setErrorMsg('铃钱不够哦！去做任务赚取铃钱吧。');
       return;
@@ -125,7 +130,7 @@ export default function TeaShopPage() {
                   <span className="font-extrabold text-sm" style={{ color: '#725d42' }}>{r.name}</span>
                   <p className="text-xs mt-1" style={{ color: '#9f927d' }}>{r.buffDescription}</p>
                   <p className="text-[10px] mt-0.5" style={{ color: '#c4b89e' }}>
-                    食材: {r.requiredIngredients.map(id => ALL_INGREDIENTS.find(i => i.id === id)?.label.split(' ')[0]).join(' + ')}
+                    食材: {r.requiredIngredients.map(id => ALL_INGREDIENTS.find(i => i.id === id)?.label ?? id).join(' + ')}
                   </p>
                 </div>
                 <div className="text-right">
@@ -154,12 +159,12 @@ export default function TeaShopPage() {
         <Card color="app-yellow">
           <h3 className="font-extrabold text-sm mb-1" style={{ color: '#725d42' }}>🧪 调配台 — {selectedRecipe.name}</h3>
           <p className="text-[10px] mb-3" style={{ color: '#9f927d' }}>
-            需要食材: {selectedRecipe.requiredIngredients.map(id => ALL_INGREDIENTS.find(i => i.id === id)?.label.split(' ')[0]).join(' + ')}
+            需要食材: {selectedRecipe.requiredIngredients.map(id => ALL_INGREDIENTS.find(i => i.id === id)?.label ?? id).join(' + ')}
           </p>
 
           {/* Ingredient shelf */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {ALL_INGREDIENTS.map((ing) => {
+            {shuffledIngredients.map((ing) => {
               const isRequired = selectedRecipe.requiredIngredients.includes(ing.id);
               return (
                 <motion.button key={ing.id} whileHover={{ scale: 1.15, y: -4 }} whileTap={{ scale: 0.9 }}
@@ -185,7 +190,7 @@ export default function TeaShopPage() {
                   borderColor: slot ? '#19c8b9' : '#e8dcc8',
                   background: slot ? '#e6f9f6' : '#faf8f2',
                 }}>
-                {slot ? ALL_INGREDIENTS.find(ing => ing.id === slot)?.label.slice(0, 2) ?? '?' : '🫗'}
+                {slot ? ALL_INGREDIENTS.find(ing => ing.id === slot)?.label ?? '?' : '🫗'}
               </button>
             ))}
           </div>

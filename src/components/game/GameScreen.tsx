@@ -54,7 +54,7 @@ export default function GameScreen() {
 
   return (
     <AppLayout showTopBar showSidebar className="p-3 sm:p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full">
         <Tabs
           items={tabItems}
           activeKey={activeTab}

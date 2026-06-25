@@ -66,7 +66,7 @@ export default function VoyagePage() {
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       {/* Coconut tree Loading background overlay */}
       <div className="absolute inset-0">
-        <Loading active={progress < 100} style={{ position: 'absolute', inset: 0, height: '100%' }} />
+        <Loading active style={{ position: 'absolute', inset: 0, height: '100%' }} />
       </div>
 
       {/* Content overlay */}

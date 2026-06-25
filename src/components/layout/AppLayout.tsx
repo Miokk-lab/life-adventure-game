@@ -36,7 +36,7 @@ export default function AppLayout({
 
         {/* Main content */}
         <main
-          className={`flex-1 transition-all duration-300 ${className}`}
+          className={`flex-1 transition-all duration-300 w-full ${className}`}
           style={{
             marginLeft: showSidebar && sidebarOpen ? 192 : 0,
           }}
@@ -46,6 +46,7 @@ export default function AppLayout({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            className="w-full"
           >
             {children}
           </motion.div>
