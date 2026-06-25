@@ -87,7 +87,7 @@ export interface BattleSkill extends SkillRef {
 }
 
 // ── Battle ──
-export type BattlePhase = 'intro' | 'player-turn' | 'enemy-turn' | 'victory' | 'defeat';
+export type BattlePhase = 'intro' | 'player-turn' | 'player-action' | 'enemy-turn' | 'victory' | 'defeat';
 
 export interface BattleActor {
   name: string;

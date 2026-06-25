@@ -146,8 +146,8 @@ export default function TasksPage() {
 
       {/* ── Writing Mini-Game Modal ── */}
       {activeGame?.type === 'writing' && (
-        <Modal open title="✍️ 给心魔写信" footer={null} onClose={() => setActiveGame(null)}>
-          <div className="p-4 text-center">
+        <Modal open title="✍️ 给心魔写信" footer={null} onClose={() => setActiveGame(null)} width={520}>
+          <div className="py-6 px-4 text-center max-w-md mx-auto">
             <p className="text-sm mb-4" style={{ color: '#725d42' }}>{activeGame.task.description}</p>
             <textarea
               className="w-full h-32 p-3 rounded-xl border-2 resize-none text-sm"
@@ -163,8 +163,8 @@ export default function TasksPage() {
 
       {/* ── Action/Water Drink Mini-Game ── */}
       {activeGame?.type === 'action' && (
-        <Modal open title="💧 一杯水的时间" footer={null} onClose={() => { setActiveGame(null); setWaterSips(0); }}>
-          <div className="p-4 text-center">
+        <Modal open title="💧 一杯水的时间" footer={null} onClose={() => { setActiveGame(null); setWaterSips(0); }} width={480}>
+          <div className="py-6 px-4 text-center max-w-sm mx-auto">
             <p className="text-sm mb-4" style={{ color: '#725d42' }}>{activeGame.task.description}</p>
             {/* Cup visualization */}
             <div className="relative w-24 h-32 mx-auto mb-4 rounded-b-2xl border-4 border-[#725D42] overflow-hidden bg-white/50">
@@ -192,8 +192,8 @@ export default function TasksPage() {
 
       {/* ── Gratitude Mini-Game ── */}
       {activeGame?.type === 'gratitude' && (
-        <Modal open title="🙏 感恩三件事" footer={null} onClose={() => { setActiveGame(null); setGratitudeTexts(['', '', '']); }}>
-          <div className="p-4 text-center">
+        <Modal open title="🙏 感恩三件事" footer={null} onClose={() => { setActiveGame(null); setGratitudeTexts(['', '', '']); }} width={500}>
+          <div className="py-6 px-4 text-center max-w-sm mx-auto">
             <p className="text-sm mb-4" style={{ color: '#725d42' }}>{activeGame.task.description}</p>
             {[0, 1, 2].map(i => (
               <input
@@ -217,8 +217,8 @@ export default function TasksPage() {
 
       {/* ── Movement/Stretch Mini-Game ── */}
       {activeGame?.type === 'movement' && (
-        <Modal open title="🧘 身体觉察" footer={null} onClose={() => { setActiveGame(null); setStretchTimer(0); }}>
-          <div className="p-4 text-center">
+        <Modal open title="🧘 身体觉察" footer={null} onClose={() => { setActiveGame(null); setStretchTimer(0); }} width={480}>
+          <div className="py-6 px-4 text-center max-w-sm mx-auto">
             <p className="text-sm mb-4" style={{ color: '#725d42' }}>{activeGame.task.description}</p>
             <motion.div className="text-6xl mb-4"
               animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}

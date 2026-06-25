@@ -39,6 +39,8 @@ export default function BattlePage() {
   const resetBattle = useBattleStore((s) => s.resetBattle);
   const selectSkill = useBattleStore((s) => s.selectSkill);
   const selectedSkillId = useBattleStore((s) => s.selectedSkillId);
+  const lastHeroAction = useBattleStore((s) => s.lastHeroAction);
+  const lastEnemyAction = useBattleStore((s) => s.lastEnemyAction);
 
   const availableSkills = useBattleStore((s) => s.availableSkills);
   const [selectedCoping, setSelectedCoping] = useState<string | null>(null);
@@ -142,39 +144,61 @@ export default function BattlePage() {
             </Card>
           </div>
 
-          {/* Battle Arena with attack name displays */}
+          {/* Battle Arena with phase-based feedback */}
           <div className="relative rounded-3xl overflow-hidden flex items-center justify-center"
             style={{ minHeight: 220, background: 'linear-gradient(180deg, #e8f5e9 0%, #fff8e7 40%, #fce4ec 100%)', border: '4px solid #725D42' }}>
             {/* Hero side */}
             <div className="absolute left-4 flex flex-col items-center gap-1">
               <motion.div className="text-5xl"
-                animate={phase === 'enemy-turn' ? { x: [0, -12, 0] } : {}} transition={{ duration: 0.4 }}>🦸</motion.div>
-              {arenaMsg.hero && (
-                <motion.span initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/80" style={{ color: '#19c8b9' }}>
-                  {arenaMsg.hero}
+                animate={phase === 'player-action' ? { x: [0, 50, 0], scale: [1, 1.3, 1] } : phase === 'enemy-turn' ? { x: [0, -15, 0] } : {}}
+                transition={{ duration: phase === 'player-action' ? 0.6 : 0.4 }}>🦸</motion.div>
+              {/* Hero attack label */}
+              {phase === 'player-action' && lastHeroAction && (
+                <motion.span initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+                  className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/90 border-2 border-[#19c8b9]" style={{ color: '#19c8b9' }}>
+                  {lastHeroAction.skillName}
+                </motion.span>
+              )}
+              {/* Hero takes damage */}
+              {phase === 'enemy-turn' && lastEnemyAction && (
+                <motion.span initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
+                  className="text-xs font-extrabold px-2 py-0.5 rounded-full" style={{ background: '#fde8e8', color: '#e05a5a' }}>
+                  -{lastEnemyAction.damage} HP
                 </motion.span>
               )}
             </div>
 
-            {/* VS */}
-            <div className="text-3xl font-black animate-pulse" style={{ color: '#e05a5a' }}>⚡VS⚡</div>
+            {/* VS indicator */}
+            <motion.div className="text-2xl font-black"
+              animate={phase === 'player-action' ? { scale: [1, 1.3, 1], rotate: [0, 10, 0] } : phase === 'enemy-turn' ? { scale: [1, 0.8, 1] } : {}}
+              style={{ color: phase === 'player-action' ? '#19c8b9' : phase === 'enemy-turn' ? '#e05a5a' : '#c4b89e' }}>
+              {phase === 'player-action' ? '⚔️' : phase === 'enemy-turn' ? '🛡️' : 'VS'}
+            </motion.div>
 
             {/* Monster side */}
             <div className="absolute right-4 flex flex-col items-center gap-1">
               <motion.div className="text-5xl"
-                animate={phase === 'player-turn' && selectedCoping ? { x: [0, 12, 0] } : {}} transition={{ duration: 0.4 }}>👾</motion.div>
-              {arenaMsg.monsterDmg !== undefined && (
-                <motion.span initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+                animate={phase === 'enemy-turn' ? { x: [0, -50, 0], scale: [1, 1.3, 1] } : phase === 'player-action' ? { x: [0, 15, 0], scale: [1, 0.85, 1] } : {}}
+                transition={{ duration: phase === 'enemy-turn' ? 0.6 : 0.4 }}>👾</motion.div>
+              {/* Monster takes damage */}
+              {phase === 'player-action' && lastHeroAction && (
+                <motion.span initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
                   className="text-xs font-extrabold px-2 py-0.5 rounded-full" style={{ background: '#fde8e8', color: '#e05a5a' }}>
-                  {arenaMsg.monsterDmg} HP
+                  -{lastHeroAction.damage} HP
+                </motion.span>
+              )}
+              {/* Monster attack label */}
+              {phase === 'enemy-turn' && lastEnemyAction && (
+                <motion.span initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+                  className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/90 border-2 border-[#e05a5a]" style={{ color: '#e05a5a' }}>
+                  发起攻击
                 </motion.span>
               )}
             </div>
           </div>
 
-          {/* Coping Strategy Grid */}
-          {phase === 'player-turn' && (
+          {/* Coping Strategy Grid — only during player-turn, hide during animations */}
+          {(phase === 'player-turn') && (
             <Card color="app-yellow">
               <h4 className="text-xs font-extrabold mb-3 text-center" style={{ color: '#725d42' }}>🎯 选择应对策略 (体力 -10/回合)</h4>
               {!selectedCoping ? (

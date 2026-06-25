@@ -8,24 +8,18 @@ interface BattleState {
   phase: BattlePhase;
   turn: number;
   isFirstBattle: boolean;
-
   hero: BattleActor;
   monster: BattleActor;
-
   availableSkills: BattleSkill[];
   selectedSkillId: string | null;
   log: BattleLogEntry[];
+  lastHeroAction: { skillName: string; damage: number } | null;
+  lastEnemyAction: { damage: number } | null;
 
-  initBattle: (
-    heroName: string,
-    heroImg: string,
-    monsterName: string,
-    monsterImg: string,
-    monsterMaxHp: number,
-    skills: BattleSkill[],
-  ) => void;
+  initBattle: (heroName: string, heroImg: string, monsterName: string, monsterImg: string, monsterMaxHp: number, skills: BattleSkill[]) => void;
   selectSkill: (skillId: string) => void;
   executeTurn: () => void;
+  advancePhase: () => void;
   forceNarrativeDefeat: () => void;
   resetBattle: () => void;
 }
@@ -38,13 +32,13 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   phase: 'intro',
   turn: 0,
   isFirstBattle: true,
-
   hero: { name: '', hp: INITIAL_HP, maxHp: INITIAL_HP, mp: INITIAL_MP, maxMp: INITIAL_MP, imageUrl: '' },
   monster: { name: '', hp: 300, maxHp: 300, mp: 100, maxMp: 100, imageUrl: '' },
-
   availableSkills: [],
   selectedSkillId: null,
   log: [],
+  lastHeroAction: null,
+  lastEnemyAction: null,
 
   initBattle: (heroName, heroImg, monsterName, monsterImg, monsterMaxHp, skills) => {
     logId = 0;
@@ -57,6 +51,8 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       availableSkills: skills,
       selectedSkillId: null,
       log: addLog([], `⚔️ ${heroName} 与 ${monsterName} 的对决开始了！`, 'system'),
+      lastHeroAction: null,
+      lastEnemyAction: null,
     });
   },
 
@@ -65,17 +61,15 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   executeTurn: () => {
     const s = get();
     if (s.phase !== 'player-turn' || !s.selectedSkillId) return;
-
     const skill = s.availableSkills.find((sk) => sk.id === s.selectedSkillId);
     if (!skill || s.hero.mp < skill.mpCost) return;
 
-    // Player action
+    // Player action — apply damage
     const newMp = s.hero.mp - skill.mpCost;
     const newMonsterHp = Math.max(0, s.monster.hp - skill.damage);
     let newLog = addLog(s.log, `🦸 ${s.hero.name} 使用【${skill.name}】！造成 ${skill.damage} 点伤害`, 'player-action');
 
     const updatedHero = { ...s.hero, mp: newMp };
-
     if (skill.healAmount > 0) {
       updatedHero.hp = Math.min(s.hero.maxHp, s.hero.hp + skill.healAmount);
       newLog = addLog(newLog, `💚 ${s.hero.name} 恢复了 ${skill.healAmount} 点生命`, 'player-action');
@@ -89,70 +83,79 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         phase: 'victory',
         log: addLog(newLog, `🎉 ${s.monster.name} 被净化了！`, 'system'),
         selectedSkillId: null,
-        turn: s.turn + 1,
+        lastHeroAction: { skillName: skill.name, damage: skill.damage },
+        lastEnemyAction: null,
       });
       return;
     }
 
-    // Enemy turn
-    const baseDmg = 8 + s.turn * 2;
-    const variance = Math.floor(Math.random() * 8);
-    const enemyDmg = baseDmg + variance;
-    const newHeroHp = Math.max(0, s.hero.hp - enemyDmg);
-    newLog = addLog(newLog, `👾 ${s.monster.name} 发起攻击！造成 ${enemyDmg} 点伤害`, 'enemy-action');
-
-    // Narrative defeat: first battle, turn >= 3, hero dies
-    if (s.isFirstBattle && s.turn >= 3 && newHeroHp <= 0) {
-      set({
-        hero: { ...updatedHero, hp: 0 },
-        monster: { ...s.monster, hp: newMonsterHp },
-        phase: 'defeat',
-        log: newLog,
-        selectedSkillId: null,
-        turn: s.turn + 1,
-      });
-      return;
-    }
-
-    // Normal continue
-    if (newHeroHp <= 0) {
-      set({
-        hero: { ...updatedHero, hp: 0 },
-        monster: { ...s.monster, hp: newMonsterHp },
-        phase: 'defeat',
-        log: newLog,
-        selectedSkillId: null,
-        turn: s.turn + 1,
-      });
-      return;
-    }
-
+    // Phase 1: hero attacked → show animation
     set({
-      hero: { ...updatedHero, hp: newHeroHp },
+      hero: updatedHero,
       monster: { ...s.monster, hp: newMonsterHp },
-      phase: 'player-turn',
+      phase: 'player-action',
       log: newLog,
       selectedSkillId: null,
-      turn: s.turn + 1,
+      lastHeroAction: { skillName: skill.name, damage: skill.damage },
+      lastEnemyAction: null,
+      turn: s.turn,
     });
+
+    // After 1.5s, monster attacks
+    setTimeout(() => {
+      const state = get();
+      if (state.phase !== 'player-action') return;
+
+      const baseDmg = 8 + state.turn * 2;
+      const variance = Math.floor(Math.random() * 8);
+      const enemyDmg = baseDmg + variance;
+      const newHeroHp = Math.max(0, state.hero.hp - enemyDmg);
+      let enemyLog = addLog(state.log, `👾 ${state.monster.name} 发起攻击！造成 ${enemyDmg} 点伤害`, 'enemy-action');
+
+      // Scripted defeat
+      if (state.isFirstBattle && state.turn >= 3 && newHeroHp <= 0) {
+        set({
+          hero: { ...state.hero, hp: 0 },
+          phase: 'defeat',
+          log: enemyLog,
+          lastHeroAction: null,
+          lastEnemyAction: { damage: enemyDmg },
+        });
+        return;
+      }
+
+      if (newHeroHp <= 0) {
+        set({
+          hero: { ...state.hero, hp: 0 },
+          phase: 'defeat',
+          log: enemyLog,
+          lastHeroAction: null,
+          lastEnemyAction: { damage: enemyDmg },
+        });
+        return;
+      }
+
+      set({
+        hero: { ...state.hero, hp: newHeroHp },
+        phase: 'enemy-turn',
+        log: enemyLog,
+        lastHeroAction: null,
+        lastEnemyAction: { damage: enemyDmg },
+      });
+
+      // After 1.5s, back to player turn
+      setTimeout(() => {
+        const s2 = get();
+        if (s2.phase !== 'enemy-turn') return;
+        set({ phase: 'player-turn', lastEnemyAction: null, turn: s2.turn + 1 });
+      }, 1500);
+    }, 1500);
   },
 
+  advancePhase: () => {},
   forceNarrativeDefeat: () => {
     const s = get();
-    set({
-      hero: { ...s.hero, hp: 0, mp: 0 },
-      phase: 'defeat',
-      log: addLog(s.log, '💨 能量耗尽…需要在岛上积蓄力量再战！', 'narrative'),
-    });
+    set({ hero: { ...s.hero, hp: 0, mp: 0 }, phase: 'defeat', log: addLog(s.log, '💨 能量耗尽…需要在岛上积蓄力量再战！', 'narrative') });
   },
-
-  resetBattle: () => {
-    logId = 0;
-    set({
-      phase: 'intro',
-      turn: 0,
-      log: [],
-      selectedSkillId: null,
-    });
-  },
+  resetBattle: () => { logId = 0; set({ phase: 'intro', turn: 0, log: [], selectedSkillId: null, lastHeroAction: null, lastEnemyAction: null }); },
 }));
