@@ -16,6 +16,7 @@ export default function WorryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const radioOptions = worryTypeList.map((w) => ({ label: `${w.emoji} ${w.label}`, value: w.key }));
 
@@ -64,7 +65,7 @@ export default function WorryPage() {
           <h2 className="text-lg font-extrabold" style={{ color: '#725d42' }}>📜 写给大海的漂流瓶信笺</h2>
           <p className="text-xs mt-1" style={{ color: '#9f927d' }}>将你的烦恼装进瓶子，抛向大海…</p>
         </div>
-        <textarea value={text} onChange={(e) => setText(e.target.value.slice(0, MAX_WORRY_LENGTH))}
+        <textarea ref={textareaRef} value={text} onChange={(e) => setText(e.target.value.slice(0, MAX_WORRY_LENGTH))}
           placeholder="写下你的烦恼…（例如：工作压力太大，每天加班到深夜…）" rows={6}
           className="w-full p-4 rounded-2xl border-2 resize-none text-sm leading-relaxed"
           style={{ borderColor: '#e8dcc8', background: '#fdfaf3', color: '#725d42', fontFamily: '"Nunito", "Noto Sans SC", sans-serif' }} />
