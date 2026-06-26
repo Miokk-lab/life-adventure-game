@@ -16,8 +16,14 @@ const TOP_LEVEL_PAGES: Record<string, React.ComponentType> = {
   voyage: VoyagePage,
   analysis: AnalysisPage,
   gamescreen: GameScreen,
+  battle: GameScreen,
+  tasks: GameScreen,
+  minigames: GameScreen,
+  teashop: GameScreen,
   victory: VictoryPage,
 };
+
+const GAME_PAGES = new Set(['gamescreen', 'battle', 'tasks', 'minigames', 'teashop']);
 
 // Pages that get the AppLayout wrapper (top bar + background)
 const LAYOUT_PAGES = new Set(['worry', 'voyage', 'analysis', 'victory']);
@@ -29,7 +35,7 @@ export default function App() {
   if (!PageComponent) return null;
 
   // GameScreen handles its own layout internally (with sidebar)
-  if (currentPage === 'gamescreen') {
+  if (GAME_PAGES.has(currentPage)) {
     return (
       <Cursor>
         <PageComponent />

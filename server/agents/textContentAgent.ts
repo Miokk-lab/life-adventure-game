@@ -117,6 +117,17 @@ function parseTextContent(content: string): TextContent {
   };
 }
 
+const WORRY_ANIMAL_CONSTRAINTS: Record<string, { hero: string; monster: string }> = {
+  work_stress:        { hero: '熊猫(panda)',             monster: '啄木鸟(woodpecker)' },
+  learning_growth:    { hero: '猫头鹰(owl)',             monster: '仓鼠(hamster)' },
+  interpersonal:      { hero: '水豚/卡皮巴拉(capybara)', monster: '刺猬(hedgehog)' },
+  family_origin:      { hero: '小鹿(deer)',              monster: '寄居蟹(hermit crab)' },
+  social_environment: { hero: '树袋熊/考拉(koala)',      monster: '变色龙(chameleon)' },
+  physical_health:    { hero: '海獭(otter)',             monster: '浣熊(raccoon)' },
+  time_management:    { hero: '乌龟(turtle)',            monster: '蚂蚁(ant)' },
+  emotion_management: { hero: '树懒(sloth)',             monster: '河豚(pufferfish)' },
+};
+
 async function callChatAPI(
   url: string,
   headers: Record<string, string>,
@@ -124,6 +135,12 @@ async function callChatAPI(
   worryText: string,
   worryType: string,
 ): Promise<TextContent> {
+  const ac = WORRY_ANIMAL_CONSTRAINTS[worryType];
+  const animalNote = ac
+    ? `\n\n⚠️ 动物种类约束（必须严格遵守，不可更改）：英雄角色必须是${ac.hero}，心魔角色必须是${ac.monster}。名字和个性可以原创，但动物种类不能变。`
+    : '';
+  const userContent = `烦恼分类：${worryType}\n用户烦恼：${worryText}${animalNote}`;
+
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
@@ -131,7 +148,7 @@ async function callChatAPI(
       model,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: `烦恼分类：${worryType}\n用户烦恼：${worryText}` },
+        { role: 'user', content: userContent },
       ],
       temperature: 0.7,
       max_tokens: 6000,
