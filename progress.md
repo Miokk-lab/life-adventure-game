@@ -55,22 +55,20 @@
 - Simplified phases (10 phases total, focused on game integration not deployment)
 - Clear API decisions noted
 
-### Completed (Auto Mode)
-- ✅ Phase 1: textContentAgent.ts — DeepSeek API, merges analyze+world, outputs English prompts
-- ✅ Phase 2: imageAgent.ts — Gemini skeleton with fixed style prefix, transparent PNG target
-- ✅ Phase 3: videoAgent.ts — frame with VIDEO_API_ENDPOINT env var slot + FFmpeg fallback skeleton
-- ✅ Phase 4: jobQueue.ts — orchestration, status polling, 12s timeout → 8 offline presets
-- ✅ Phase 5: server.ts API — POST /api/adventure/create, GET /api/adventure/{id}/status, GET /api/adventure/{id}/data
-- ✅ .env.example — documents all required API keys
+### Phases 1-5: Backend Complete
+- ✅ Phase 1: textContentAgent.ts — DeepSeek API, outputs text + English prompts
+- ✅ Phase 2: imageAgent.ts — Gemini skeleton with style prefix
+- ✅ Phase 3: videoAgent.ts — frame with env var slot
+- ✅ Phase 4: jobQueue.ts — orchestration + 8 presets
+- ✅ Phase 5: server.ts API — 3 routes (create, status, data)
 
-### Built
-- 3 agents (text: 104 LOC, image: 110 LOC, video: 101 LOC)
-- Job queue with progress tracking
-- Offline preset library for 8 categories (hardcoded in jobQueue)
-- API routes with async pipeline orchestration
+### Phases 6-9: Frontend Integration Complete
+- ✅ Phase 6: VoyagePage (Page3) — polling 2s interval, progress bar, 12s timeout fallback
+- ✅ Phase 7: AnalysisPage (Page4) — hero/monster cards + CBT analysis typewriter
+- ✅ Phase 8: VictoryPage (Page9) — video player + collection tabs
+- ✅ Phase 9: Offline presets — 8 categories wired (jobQueue)
 
-### Next: Phases 6-10
-- Page3 Loading: wire polling to progress bar
-- Page4 Analysis: render hero/monster cards
-- Page9 Victory: video player
-- Tests: end-to-end flow
+### Phase 10: Integration Test (In Progress)
+- App flow: worry input → Page3 polling → Page4 cards → battle → Page9 video
+- Need test: API responses, timeouts, video playback
+- Check: data binding, navigation between pages
