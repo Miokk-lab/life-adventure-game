@@ -2,6 +2,17 @@ import type { WorryCategory, HeroData, MonsterData, BattleSkill, DailyTask, Skil
 import { makeSkill } from './skills';
 import { generateDailyTasks } from './quests';
 
+export const VICTORY_VIDEO_MAP: Record<string, string> = {
+  work_stress:        '/vedio/work-stress.mp4',
+  learning_growth:    '/vedio/Learning-Growth.mp4',
+  interpersonal:      '/vedio/Interpersonal-Relations.mp4',
+  family_origin:      '/vedio/family-origin.mp4',
+  social_environment: '/vedio/Social-Environment.mp4',
+  physical_health:    '/vedio/Physical-Health.mp4',
+  time_management:    '/vedio/Time-Management.mp4',
+  emotion_management: '/vedio/Emotion%20Management.mp4',
+};
+
 interface CategoryPreset {
   hero: HeroData;
   monster: MonsterData;

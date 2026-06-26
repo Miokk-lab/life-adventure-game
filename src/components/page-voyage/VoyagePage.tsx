@@ -3,7 +3,7 @@ import { useGameStore } from '../../stores/useGameStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
 import { Loading, Typewriter, Modal, Button, Card } from 'animal-island-ui';
 import { motion } from 'motion/react';
-import { getOfflinePreset } from '../../data/presets';
+import { getOfflinePreset, VICTORY_VIDEO_MAP } from '../../data/presets';
 import type { WorryCategory } from '../../types';
 
 interface StatusResponse {
@@ -184,7 +184,7 @@ export default function VoyagePage() {
               },
               cbtAnalysis: data.data.cbtAnalysis,
               victoryText: data.data.victoryText,
-              victoryVideoUrl: data.data.videoUrl || '',
+              victoryVideoUrl: data.data.videoUrl || VICTORY_VIDEO_MAP[worryType as string] || '',
               battleSkills,
             });
             setTasks(tasks);
@@ -226,7 +226,7 @@ export default function VoyagePage() {
       monster: preset.monster,
       cbtAnalysis: preset.cbtAnalysis,
       victoryText: preset.victoryText,
-      victoryVideoUrl: '',
+      victoryVideoUrl: VICTORY_VIDEO_MAP[worryType as string] || '',
       battleSkills: preset.skills,
     });
     setTasks(preset.tasks);
