@@ -23,6 +23,10 @@ export default function BattlePage() {
   const monsterData = useAdventureStore((s) => s.monster);
   const battleSkills = useAdventureStore((s) => s.battleSkills);
   const chapter = useAdventureStore((s) => s.chapter);
+  const adventureHp = useAdventureStore((s) => s.hp);
+  const adventureMp = useAdventureStore((s) => s.mp);
+  const persistedMonsterHp = useAdventureStore((s) => s.monsterHp);
+  const setMonsterHp = useAdventureStore((s) => s.setMonsterHp);
   const stamina = useAdventureStore((s) => s.stamina);
   const consumeStamina = useAdventureStore((s) => s.consumeStamina);
   const updateHp = useAdventureStore((s) => s.updateHp);
@@ -60,7 +64,7 @@ export default function BattlePage() {
   useEffect(() => {
     if (!initialized.current && heroData && monsterData && battleSkills.length > 0) {
       initialized.current = true;
-      initBattle(heroData.name, heroData.imageUrl, monsterData.name, monsterData.imageUrl, 100, battleSkills);
+      initBattle(heroData.name, heroData.imageUrl, monsterData.name, monsterData.imageUrl, persistedMonsterHp ?? 100, battleSkills, adventureHp, adventureMp);
     }
   }, [heroData, monsterData, battleSkills]);
 
@@ -80,6 +84,7 @@ export default function BattlePage() {
     // Monster HP decreases during player-action (hero attacks)
     if (monsterDiff < 0 && phase === 'player-action') {
       spawnFloatingText(`${monsterDiff}`, '#ff9f1c');
+      setMonsterHp(monsterActor.hp);
     }
     // MP always syncs
     if (mpDiff !== 0) updateMp(mpDiff);
@@ -91,7 +96,7 @@ export default function BattlePage() {
 
   const handleSelectCoping = (tactic: string) => {
     setSelectedCoping(tactic);
-    const skillMap: Record<string, string> = { avoid: 'turtle', resist: 'sloth', adapt: 'tiger', challenge: 'tiger', transform: 'snake' };
+    const skillMap: Record<string, string> = { avoid: 'turtle', resist: 'sloth', adapt: 'tiger', challenge: 'eagle', transform: 'snake' };
     const animal = skillMap[tactic];
     const skillsOfAnimal = availableSkills.filter(s => s.animal === animal && s.level <= chapter);
     const skill = skillsOfAnimal.sort((a, b) => b.level - a.level)[0];
@@ -278,7 +283,7 @@ export default function BattlePage() {
 
       {/* Victory fullscreen overlay — upgrades from spinner → image → video as media arrives */}
       {phase === 'victory' && (() => {
-        const handleProceed = () => { addCoins(50); addExp(50); playResolve(); navigateTo('victory'); };
+        const handleProceed = () => { addCoins(50); addExp(50); playResolve(); setMonsterHp(null); navigateTo('victory'); };
 
         // Priority 1: video ready → fullscreen video
         if (victoryVideoUrl) {
@@ -362,16 +367,28 @@ export default function BattlePage() {
           </div>
         );
       })()}
+      {heroActor.mp === 0 && phase !== 'defeat' && phase !== 'victory' && (
+        <Modal open title="💙 能量耗尽…" typewriter={false} footer={null} onClose={() => {}}>
+          <div className="text-center py-4">
+            <p className="text-lg font-bold mb-4" style={{ color: '#2196F3' }}>应对能量不足了！</p>
+            <p className="text-sm mb-6" style={{ color: '#725d42' }}>做一件日常任务来恢复应对能量，再回来挑战吧！</p>
+            <Button type="primary" size="large" onClick={() => navigateTo('tasks')}>📋 去做任务</Button>
+          </div>
+        </Modal>
+      )}
       {phase === 'defeat' && isFirstBattle && (
         <Modal open title="💨 能量耗尽…" typewriter={false} footer={null} onClose={() => {}}>
           <div className="text-center py-4"><p className="text-lg font-bold mb-4" style={{ color: '#e05a5a' }}>呼……心魔太强了！</p>
-            <p className="text-sm mb-6" style={{ color: '#725d42' }}>需要在岛上完成日常任务，积蓄能量后再来挑战。</p>
+            <p className="text-sm mb-4" style={{ color: '#725d42' }}>需要在岛上完成日常任务，积蓄能量后再来挑战。</p>
+            <p className="text-xs mb-6 font-bold" style={{ color: '#e05a5a' }}>别让自己太累了——保护能量，才能打败心魔。</p>
             <Button type="primary" size="large" onClick={() => { resetBattle(); navigateTo('tasks'); }}>📋 去做日常任务</Button></div>
         </Modal>
       )}
       {phase === 'defeat' && !isFirstBattle && (
         <Modal open title="💔 战斗失败" typewriter={false} footer={null} onClose={() => {}}>
-          <div className="text-center py-4"><p className="text-sm mb-6" style={{ color: '#725d42' }}>去静心营地恢复HP，或泡杯花茶再来！</p>
+          <div className="text-center py-4">
+            <p className="text-sm mb-4" style={{ color: '#725d42' }}>去静心营地恢复HP，或泡杯花茶再来！</p>
+            <p className="text-xs mb-6 font-bold" style={{ color: '#e05a5a' }}>别让自己太累了——保护能量，才能打败心魔。</p>
             <div className="flex gap-3 justify-center">
               <Button type="default" onClick={() => { resetBattle(); navigateTo('minigames'); }}>🏕️ 静心营地</Button>
               <Button type="primary" onClick={() => { resetBattle(); navigateTo('teashop'); }}>🍵 花茶补给</Button></div>

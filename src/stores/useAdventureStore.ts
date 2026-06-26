@@ -22,6 +22,7 @@ interface AdventureState {
   exp: number;
   chapter: number;
 
+  monsterHp: number | null;
   tasks: DailyTask[];
   battleSkills: import('../types').BattleSkill[];
   collection: string[];
@@ -47,6 +48,7 @@ interface AdventureState {
   setTaskId: (id: string) => void;
   setVictoryImageUrl: (url: string) => void;
   setVictoryVideoUrl: (url: string) => void;
+  setMonsterHp: (hp: number | null) => void;
   setTasks: (tasks: DailyTask[]) => void;
   completeTask: (taskId: string) => void;
   updateHp: (delta: number) => void;
@@ -84,6 +86,7 @@ const initialState = {
   coins: INITIAL_COINS,
   exp: 0,
   chapter: 1,
+  monsterHp: null,
   tasks: [],
   battleSkills: [],
   collection: [],
@@ -114,6 +117,7 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
     }),
 
   setTaskId: (id) => set({ taskId: id }),
+  setMonsterHp: (hp) => set({ monsterHp: hp }),
   setVictoryImageUrl: (url) => set({ victoryImageUrl: url }),
   setVictoryVideoUrl: (url) => set({ victoryVideoUrl: url }),
 

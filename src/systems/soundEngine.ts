@@ -67,6 +67,22 @@ function note(
 
 let currentPage = '';
 let pendingAudio: HTMLAudioElement | null = null;
+let fadeTimer: ReturnType<typeof setInterval> | null = null;
+
+function fadeVolume(audio: HTMLAudioElement, from: number, to: number, ms: number): Promise<void> {
+  return new Promise(resolve => {
+    if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+    const steps = 20;
+    const stepMs = ms / steps;
+    const delta = (to - from) / steps;
+    let i = 0;
+    fadeTimer = setInterval(() => {
+      i++;
+      audio.volume = Math.max(0, Math.min(1, from + delta * i));
+      if (i >= steps) { clearInterval(fadeTimer!); fadeTimer = null; resolve(); }
+    }, stepMs);
+  });
+}
 
 function retryPending() {
   if (pendingAudio) {
@@ -84,7 +100,7 @@ function playWithRetry(audio: HTMLAudioElement) {
   });
 }
 
-export function setPageAmbient(page: string) {
+export async function setPageAmbient(page: string) {
   if (page === currentPage) return;
   currentPage = page;
   if (isMuted) return;
@@ -97,12 +113,20 @@ export function setPageAmbient(page: string) {
     return;
   }
 
+  // Fade out current BGM before switching
+  if (bgmAudio && !bgmAudio.paused) {
+    await fadeVolume(bgmAudio, bgmAudio.volume, 0, 1000);
+    bgmAudio.pause();
+  }
+
   ensureBgm(src);
 
   if (bgmAudio) {
     bgmAudio.src = src;
+    bgmAudio.volume = 0;
     currentBgmSrc = src;
     playWithRetry(bgmAudio);
+    fadeVolume(bgmAudio, 0, 0.4, 1000);
   }
 }
 

@@ -34,7 +34,7 @@ Generate all narrative, psychological analysis, and image/animation prompts for 
 - Embody the **reverse quality** of the worry (responsibility → rest, ambition → wisdom, etc.)
 - Cute animal form, calming nature (such as panda, owl, capybara, koala, turtle, otter, sloth)
 - Must feel like an **inner ally**, not external savior
-- Skill set spans 3 dimensions (acceptance, mindfulness, action, reframe) × 3 levels each
+- Skill set spans 5 dimensions × 3 levels each (turtle=接纳, sloth=正念, tiger=行动, eagle=挑战/ACT exposure/face-the-avoided, snake=重构)
 
 ### Monster Character
 - Shadow of the worry (workaholic → woodpecker, anxiety → hamster, fear → porcupine)

@@ -68,7 +68,10 @@ const SYSTEM_PROMPT = `你是一位CBT心理治疗师兼动森风格RPG游戏设
     {"animal": "tiger", "level": 3, "name": "3-4字", "description": "8-15字"},
     {"animal": "snake", "level": 1, "name": "3-4字，蛇系洞察重构技能", "description": "8-15字"},
     {"animal": "snake", "level": 2, "name": "3-4字", "description": "8-15字"},
-    {"animal": "snake", "level": 3, "name": "3-4字", "description": "8-15字"}
+    {"animal": "snake", "level": 3, "name": "3-4字", "description": "8-15字"},
+    {"animal": "eagle", "level": 1, "name": "3-4字，雄鹰系直面挑战技能（ACT暴露：识别正在逃避的具体情境）", "description": "8-15字"},
+    {"animal": "eagle", "level": 2, "name": "3-4字，中级鹰系技能（直接接触触发情境）", "description": "8-15字"},
+    {"animal": "eagle", "level": 3, "name": "3-4字，最强鹰系技能（价值导向的勇敢行动）", "description": "8-15字"}
   ],
   "dailyTasks": [
     {"type": "breathing", "description": "与用户具体烦恼相关的呼吸练习任务（15-30字）", "target": 3, "reward": {"mpBonus": 2, "exp": 15}},
@@ -87,7 +90,7 @@ Rules:
 - 字数要求：heroStory≥150字，monsterStory≥150字，cbtAnalysis≤400字符（严格控制），victoryText≥300字
 - heroSkills每个技能名3-4字，monsterAttacks每个攻击10-20字
 - 所有中文内容必须是完整的、有情感深度的文本，不能用省略号或简短模板
-- battleSkillContent必须输出恰好12个对象（turtle×3, sloth×3, tiger×3, snake×3），技能名称和描述必须与用户的具体烦恼相关
+- battleSkillContent必须输出恰好15个对象（turtle×3, sloth×3, tiger×3, snake×3, eagle×3），技能名称和描述必须与用户的具体烦恼相关；eagle系技能代表ACT暴露疗法：直面回避行为，做一件一直在逃避的事
 - dailyTasks必须输出恰好5个任务，类型分别为breathing/writing/action/gratitude/movement，任务描述必须针对用户的具体问题而非泛泛而谈`;
 
 function parseTextContent(content: string): TextContent {

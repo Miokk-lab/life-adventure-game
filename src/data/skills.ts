@@ -5,6 +5,7 @@ export const ANIMAL_LABELS: Record<SkillAnimal, { name: string; emoji: string; a
   sloth: { name: '树懒', emoji: '🦥', act: '正念' },
   tiger: { name: '老虎', emoji: '🐯', act: '行动' },
   snake: { name: '灵蛇', emoji: '🐍', act: '重构' },
+  eagle: { name: '雄鹰', emoji: '🦅', act: '挑战' },
 };
 
 export function makeSkill(
@@ -44,4 +45,9 @@ export const DEFAULT_SKILLS: BattleSkill[] = [
   makeSkill('snake_l1', 'snake', 1, '换框思考', '换个角度看问题', 6, 12, 0, 'damage', 0),
   makeSkill('snake_l2', 'snake', 2, '去灾难化', '最坏的结果真的会那么糟吗？', 10, 20, 0, 'debuff', 25),
   makeSkill('snake_l3', 'snake', 3, '智慧转化', '将痛苦经历化为成长的阶梯', 16, 30, 10, 'buff', 40),
+
+  // Eagle — ACT Exposure / Challenge (挑战)
+  makeSkill('eagle_l1', 'eagle', 1, '识别回避', '认出正在逃避的事，把它命名出来', 10, 8, 5, 'heal', 0),
+  makeSkill('eagle_l2', 'eagle', 2, '直面触发', '主动接触让你不舒服的情境', 20, 18, 0, 'damage', 0),
+  makeSkill('eagle_l3', 'eagle', 3, '勇者突破', '做一件你一直在逃避的事', 30, 32, 0, 'buff', 45),
 ];

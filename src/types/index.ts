@@ -66,7 +66,7 @@ export interface PrescriptionData {
 }
 
 // ── Skills ──
-export type SkillAnimal = 'turtle' | 'sloth' | 'tiger' | 'snake';
+export type SkillAnimal = 'turtle' | 'sloth' | 'tiger' | 'snake' | 'eagle';
 export type SkillLevel = 1 | 2 | 3;
 
 export interface SkillRef {

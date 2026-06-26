@@ -63,7 +63,14 @@ export default function VoyagePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [offlineHeroName, setOfflineHeroName] = useState<string | null>(null);
+  const [animActive, setAnimActive] = useState(false);
   const detectedTextSetRef = useRef(false);
+
+  // Trigger loading animation on mount (false → true transition activates GSAP)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setAnimActive(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   // Auto-cycle story phases every 7s while loading (phases 0→1→2→loop, phase 3 on completion)
   useEffect(() => {
@@ -244,7 +251,7 @@ export default function VoyagePage() {
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       {/* Coconut tree Loading background overlay — stable key prevents animation resets */}
       <div className="absolute inset-0">
-        <Loading key="voyage-loading" active={true} className="voyage-loading" style={{ position: 'absolute', inset: 0, height: '100%' }} />
+        <Loading key="voyage-loading" active={animActive} className="voyage-loading" style={{ position: 'absolute', inset: 0, height: '100%' }} />
       </div>
 
       {/* Content overlay */}

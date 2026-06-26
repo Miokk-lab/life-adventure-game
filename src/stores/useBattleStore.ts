@@ -16,7 +16,7 @@ interface BattleState {
   lastHeroAction: { skillName: string; damage: number } | null;
   lastEnemyAction: { damage: number } | null;
 
-  initBattle: (heroName: string, heroImg: string, monsterName: string, monsterImg: string, monsterMaxHp: number, skills: BattleSkill[]) => void;
+  initBattle: (heroName: string, heroImg: string, monsterName: string, monsterImg: string, monsterMaxHp: number, skills: BattleSkill[], heroHp?: number, heroMp?: number) => void;
   selectSkill: (skillId: string) => void;
   executeTurn: (mpCost?: number) => void;
   advancePhase: () => void;
@@ -40,13 +40,13 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   lastHeroAction: null,
   lastEnemyAction: null,
 
-  initBattle: (heroName, heroImg, monsterName, monsterImg, monsterMaxHp, skills) => {
+  initBattle: (heroName, heroImg, monsterName, monsterImg, monsterMaxHp, skills, heroHp?, heroMp?) => {
     logId = 0;
     set({
       phase: 'player-turn',
       turn: 1,
       isFirstBattle: true,
-      hero: { name: heroName, hp: INITIAL_HP, maxHp: INITIAL_HP, mp: INITIAL_MP, maxMp: INITIAL_MP, imageUrl: heroImg },
+      hero: { name: heroName, hp: heroHp ?? INITIAL_HP, maxHp: INITIAL_HP, mp: heroMp ?? INITIAL_MP, maxMp: INITIAL_MP, imageUrl: heroImg },
       monster: { name: monsterName, hp: monsterMaxHp, maxHp: monsterMaxHp, mp: 100, maxMp: 100, imageUrl: monsterImg },
       availableSkills: skills,
       selectedSkillId: null,

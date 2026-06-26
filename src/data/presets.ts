@@ -57,6 +57,9 @@ const WORK_STRESS: CategoryPreset = {
     makeSkill('ws_snake_l1', 'snake', 1, '任务拆解', '将大项目化为小块，一块一块来', 5, 10, 0, 'damage', 0),
     makeSkill('ws_snake_l2', 'snake', 2, '经验总结', '视错误为流程优化的数据，而非失败', 10, 16, 0, 'damage', 0),
     makeSkill('ws_snake_l3', 'snake', 3, '加班重定义', '把加班时间看作能力提升的阶梯而非苦难', 14, 26, 5, 'buff', 35),
+    makeSkill('ws_eagle_l1', 'eagle', 1, '说出拖延', '对自己承认正在逃避哪件工作，把它写下来', 10, 8, 5, 'heal', 0),
+    makeSkill('ws_eagle_l2', 'eagle', 2, '直面反馈', '主动向上级汇报困难或寻求支持，而非独自扛着', 20, 18, 0, 'damage', 0),
+    makeSkill('ws_eagle_l3', 'eagle', 3, '设限谈判', '直接开口拒绝一个不合理的工作要求', 30, 32, 0, 'buff', 45),
   ],
 };
 
@@ -91,6 +94,9 @@ const LEARNING_GROWTH: CategoryPreset = {
     makeSkill('lg_snake_l1', 'snake', 1, '错误记录', '分析失败的原因，这是最好的学习材料', 5, 8, 0, 'damage', 0),
     makeSkill('lg_snake_l2', 'snake', 2, '思维迁移', '用旧知识解释新知识，建立联系', 10, 16, 0, 'damage', 0),
     makeSkill('lg_snake_l3', 'snake', 3, '地图重绘', '将学习定义为一场探索游戏，而不是任务清单', 14, 26, 8, 'buff', 35),
+    makeSkill('lg_eagle_l1', 'eagle', 1, '承认不懂', '在学习中主动说出"我不明白"，停止假装理解', 10, 8, 5, 'heal', 0),
+    makeSkill('lg_eagle_l2', 'eagle', 2, '当面请教', '找比你懂的人当面提问，不再靠自己闷头钻研', 20, 18, 0, 'damage', 0),
+    makeSkill('lg_eagle_l3', 'eagle', 3, '公开承诺', '向他人宣告一个具体的学习目标和截止日期', 30, 32, 0, 'buff', 45),
   ],
 };
 
@@ -125,6 +131,9 @@ const INTERPERSONAL: CategoryPreset = {
     makeSkill('ip_snake_l1', 'snake', 1, '换位共情', '意识到对方也和你一样焦虑', 5, 8, 0, 'damage', 0),
     makeSkill('ip_snake_l2', 'snake', 2, '理解局限', '意识到他人也有软肋和局限', 10, 16, 0, 'damage', 0),
     makeSkill('ip_snake_l3', 'snake', 3, '关系化简', '只珍惜那些真诚的连接，其他的随缘', 14, 26, 5, 'buff', 35),
+    makeSkill('ip_eagle_l1', 'eagle', 1, '说出心声', '对一个重要的人说出一句真实感受，不再掩饰', 10, 8, 5, 'heal', 0),
+    makeSkill('ip_eagle_l2', 'eagle', 2, '提出需求', '直接要求你需要的支持或个人空间', 20, 18, 0, 'damage', 0),
+    makeSkill('ip_eagle_l3', 'eagle', 3, '主动修复', '迈出修复一段关系的第一步，不等对方先行动', 30, 32, 5, 'buff', 40),
   ],
 };
 
@@ -159,6 +168,9 @@ const FAMILY_ORIGIN: CategoryPreset = {
     makeSkill('fo_snake_l1', 'snake', 1, '区分界限', '那是他们的课题，不是我的', 5, 8, 0, 'damage', 0),
     makeSkill('fo_snake_l2', 'snake', 2, '珍视自我', '我的需求同样重要，不必为此愧疚', 10, 16, 0, 'damage', 0),
     makeSkill('fo_snake_l3', 'snake', 3, '新生发芽', '建立属于自己的家，定义自己的归属', 14, 26, 8, 'buff', 35),
+    makeSkill('fo_eagle_l1', 'eagle', 1, '命名旧伤', '说出一件影响至今的童年经历，不再回避它的存在', 10, 8, 5, 'heal', 0),
+    makeSkill('fo_eagle_l2', 'eagle', 2, '设定界限', '对家人说出一条你需要的边界，用成年人身份表达', 20, 18, 0, 'damage', 0),
+    makeSkill('fo_eagle_l3', 'eagle', 3, '直面创伤', '以旁观者角度重新进入最深的家庭痛点，不再逃走', 30, 32, 0, 'buff', 45),
   ],
 };
 
@@ -193,6 +205,9 @@ const SOCIAL_ENVIRONMENT: CategoryPreset = {
     makeSkill('se_snake_l1', 'snake', 1, '需求扫描', '我到底需要什么？还是只是想要？', 5, 8, 0, 'damage', 0),
     makeSkill('se_snake_l2', 'snake', 2, '审美重定义', '独特比流行更美，小众不等于错误', 10, 16, 0, 'damage', 0),
     makeSkill('se_snake_l3', 'snake', 3, '建立小岛', '建立属于自己的圈子和世界', 14, 26, 8, 'buff', 35),
+    makeSkill('se_eagle_l1', 'eagle', 1, '说出异见', '在安全的小范围内表达与多数人不同的观点', 10, 8, 5, 'heal', 0),
+    makeSkill('se_eagle_l2', 'eagle', 2, '抵制压力', '当众拒绝一个来自外部的不合理社会期待', 20, 18, 0, 'damage', 0),
+    makeSkill('se_eagle_l3', 'eagle', 3, '公开立场', '在重要场合说出真实的自己，不伪装成别人期待的样子', 30, 32, 0, 'buff', 45),
   ],
 };
 
@@ -227,6 +242,9 @@ const PHYSICAL_HEALTH: CategoryPreset = {
     makeSkill('ph_snake_l1', 'snake', 1, '倾听需求', '这不是病，是身体在向你求救', 5, 8, 0, 'damage', 0),
     makeSkill('ph_snake_l2', 'snake', 2, '健康重定义', '不追求完美的身体机能，而是整体的幸福感', 10, 16, 0, 'damage', 0),
     makeSkill('ph_snake_l3', 'snake', 3, '梦境重启', '睡个好觉就是最伟大的成就', 14, 26, 10, 'buff', 35),
+    makeSkill('ph_eagle_l1', 'eagle', 1, '正视症状', '认真记录并承认身体发出的警告信号，不再忽视', 10, 8, 5, 'heal', 0),
+    makeSkill('ph_eagle_l2', 'eagle', 2, '预约检查', '主动预约一次你一直在推迟的医疗或健康检查', 20, 18, 5, 'heal', 0),
+    makeSkill('ph_eagle_l3', 'eagle', 3, '打破习惯', '直面并主动挑战一个损害健康的根深蒂固生活习惯', 30, 32, 0, 'buff', 45),
   ],
 };
 
@@ -261,6 +279,9 @@ const TIME_MANAGEMENT: CategoryPreset = {
     makeSkill('tm_snake_l1', 'snake', 1, '定义忙碌', '区分「盲目地忙」和「有效地动」', 5, 8, 0, 'damage', 0),
     makeSkill('tm_snake_l2', 'snake', 2, '放弃艺术', '学会放弃，才能得到真正重要的东西', 10, 16, 0, 'damage', 0),
     makeSkill('tm_snake_l3', 'snake', 3, '金色慢步', '慢慢来，才比较快——重新定义速度', 14, 26, 8, 'buff', 35),
+    makeSkill('tm_eagle_l1', 'eagle', 1, '承认浪费', '列出过去一周浪费最多时间的一件事，如实写下它', 10, 8, 5, 'heal', 0),
+    makeSkill('tm_eagle_l2', 'eagle', 2, '拒绝消耗', '明确拒绝一件耗时最多但价值最低的活动', 20, 18, 0, 'damage', 0),
+    makeSkill('tm_eagle_l3', 'eagle', 3, '价值重构', '从真实价值观出发，重新决定哪件事值得你的时间', 30, 32, 0, 'buff', 45),
   ],
 };
 
@@ -295,6 +316,9 @@ const EMOTION_MANAGEMENT: CategoryPreset = {
     makeSkill('em_snake_l1', 'snake', 1, '燃料转化', '将愤怒的能量转化为积极的动力', 5, 8, 0, 'damage', 0),
     makeSkill('em_snake_l2', 'snake', 2, '艺术升华', '把感受画下来、写下来、唱出来', 10, 16, 0, 'damage', 0),
     makeSkill('em_snake_l3', 'snake', 3, '雨后天晴', '看到暴风雨后的平静——情绪只是访客', 14, 26, 10, 'buff', 35),
+    makeSkill('em_eagle_l1', 'eagle', 1, '直视触发', '找出让你最容易情绪失控的具体情境，如实命名它', 10, 8, 5, 'heal', 0),
+    makeSkill('em_eagle_l2', 'eagle', 2, '表达边界', '向引发情绪的对象说出你的感受和界限，不再隐忍', 20, 18, 0, 'damage', 0),
+    makeSkill('em_eagle_l3', 'eagle', 3, '迎向恐惧', '主动进入你一直在情绪上回避的场景，与恐惧正面相遇', 30, 32, 0, 'buff', 45),
   ],
 };
 

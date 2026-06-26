@@ -6,6 +6,8 @@ import { INITIAL_HP, INITIAL_MP, INITIAL_STAMINA } from '../../constants';
 export default function HUD() {
   const hp = useAdventureStore((s) => s.hp);
   const maxHp = useAdventureStore((s) => s.maxHp);
+  const mp = useAdventureStore((s) => s.mp);
+  const maxMp = useAdventureStore((s) => s.maxMp);
   const stamina = useAdventureStore((s) => s.stamina);
   const maxStamina = useAdventureStore((s) => s.maxStamina);
   const coins = useAdventureStore((s) => s.coins);
@@ -25,6 +27,11 @@ export default function HUD() {
         {/* HP */}
         <div className="flex-1 min-w-[120px]">
           <ProgressBar value={hp} max={maxHp} colorClass="bar-hp" label="❤️ HP" />
+        </div>
+
+        {/* MP / coping energy */}
+        <div className="flex-1 min-w-[120px]">
+          <ProgressBar value={mp} max={maxMp} colorClass="bar-mp" label="💙 能量" />
         </div>
 
         {/* Stamina */}

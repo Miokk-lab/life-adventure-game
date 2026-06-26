@@ -73,24 +73,60 @@ export default function AnalysisPage() {
                 <span className="text-[10px] font-black" style={{ color: '#A08E75' }}>📋 心理诊断卡</span>
                 <h3 className="text-base font-extrabold mt-1" style={{ color: '#5D4037' }}>CBT一体两面分析</h3>
               </div>
-              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
                 {cbtAnalysis ? (() => {
                   const SECTION_STYLES = [
-                    { bg: '#E8F5E9', border: '#4CAF50', icon: '✨', label: '看见力量' },
-                    { bg: '#FFF8E1', border: '#FF9800', icon: '🔍', label: '识别陷阱' },
-                    { bg: '#E3F2FD', border: '#2196F3', icon: '🌱', label: '小步行动' },
+                    { bg: '#E8F5E9', border: '#4CAF50', headingColor: '#2E7D32', icon: '✨', label: '看见力量' },
+                    { bg: '#FFF8E1', border: '#FF9800', headingColor: '#E65100', icon: '🔍', label: '识别陷阱' },
+                    { bg: '#E3F2FD', border: '#2196F3', headingColor: '#1565C0', icon: '🌱', label: '小步行动' },
                   ];
                   const sections = cbtAnalysis.split('\n\n').filter(Boolean).slice(0, 3);
                   return sections.map((para, i) => {
                     const style = SECTION_STYLES[i] ?? SECTION_STYLES[0];
-                    // Strip ①②③【label】 prefix
+                    // Extract section label from ①②③【label】 prefix
+                    const labelMatch = para.match(/^[①②③]【([^】]*)】\s*/);
+                    const sectionLabel = labelMatch ? labelMatch[1] : style.label;
                     const body = para.replace(/^[①②③]【[^】]*】\s*/, '').trim();
+                    // Split into lines; detect bullet lines
+                    const lines = body.split('\n').filter(Boolean);
+                    const isBullet = (line: string) => /^[·•\-–]|^\d+[、.]/.test(line.trim());
+                    // Highlight 「quoted」 terms inline
+                    const renderWithHighlights = (text: string) => {
+                      const parts = text.split(/(「[^」]+」|【[^】]+】)/g);
+                      return parts.map((part, j) =>
+                        /^「|^【/.test(part)
+                          ? <mark key={j} style={{ background: style.border + '22', color: style.headingColor, borderRadius: 3, padding: '0 2px', fontWeight: 700 }}>{part}</mark>
+                          : <span key={j}>{part}</span>
+                      );
+                    };
+                    const bulletLines = lines.filter(isBullet);
+                    const paraLines = lines.filter(l => !isBullet(l));
                     return (
-                      <div key={i} style={{ background: style.bg, border: `2px solid ${style.border}`, borderRadius: 16, padding: '10px 14px' }}>
-                        <p style={{ fontWeight: 800, color: style.border, fontSize: 11, marginBottom: 4 }}>
-                          {style.icon} {style.label}
-                        </p>
-                        <p style={{ fontSize: 12, lineHeight: 1.7, color: '#5D4037' }}>{body}</p>
+                      <div key={i} style={{ background: style.bg, border: `2px solid ${style.border}`, borderRadius: 16, padding: '12px 14px' }}>
+                        {/* Section heading */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: style.border, flexShrink: 0, display: 'inline-block' }} />
+                          <p style={{ fontWeight: 900, color: style.headingColor, fontSize: 14, margin: 0 }}>
+                            {style.icon} {sectionLabel}
+                          </p>
+                        </div>
+                        {/* Paragraph lines */}
+                        {paraLines.map((line, j) => (
+                          <p key={j} style={{ fontSize: 12, lineHeight: 1.8, color: '#5D4037', marginBottom: bulletLines.length > 0 ? 6 : 0 }}>
+                            {renderWithHighlights(line)}
+                          </p>
+                        ))}
+                        {/* Bullet list */}
+                        {bulletLines.length > 0 && (
+                          <ul style={{ margin: '4px 0 0 0', paddingLeft: 16, listStyle: 'none' }}>
+                            {bulletLines.map((line, j) => (
+                              <li key={j} style={{ fontSize: 12, lineHeight: 1.8, color: '#5D4037', display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                                <span style={{ color: style.border, fontWeight: 700, flexShrink: 0, marginTop: 2 }}>▸</span>
+                                <span>{renderWithHighlights(line.replace(/^[·•\-–]|\d+[、.]/, '').trim())}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     );
                   });
