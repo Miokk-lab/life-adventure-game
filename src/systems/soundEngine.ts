@@ -17,7 +17,7 @@ const BATTLE_SRC = '/music/battle page.mp3';
 const MAIN_SRC = '/music/main-menu.mp3';
 
 function getBgmSrc(page: string): string {
-  if (page === 'battle' || page === 'gamescreen') return BATTLE_SRC;
+  if (page === 'battle') return BATTLE_SRC;
   return MAIN_SRC;
 }
 
@@ -66,6 +66,23 @@ function note(
 // ── Public API ──
 
 let currentPage = '';
+let pendingAudio: HTMLAudioElement | null = null;
+
+function retryPending() {
+  if (pendingAudio) {
+    pendingAudio.play().then(() => { pendingAudio = null; }).catch(() => {});
+  }
+}
+(['click', 'touchstart', 'keydown', 'pointerdown'] as const).forEach(evt =>
+  document.addEventListener(evt, retryPending)
+);
+
+function playWithRetry(audio: HTMLAudioElement) {
+  pendingAudio = audio;
+  audio.play().then(() => { pendingAudio = null; }).catch(() => {
+    // retryPending() will be called on next user interaction
+  });
+}
 
 export function setPageAmbient(page: string) {
   if (page === currentPage) return;
@@ -74,9 +91,9 @@ export function setPageAmbient(page: string) {
 
   const src = getBgmSrc(page);
 
-  // Same track already playing — don't restart
+  // Same track already playing — resume if paused
   if (bgmAudio && currentBgmSrc === src) {
-    if (bgmAudio.paused) bgmAudio.play().catch(() => {});
+    if (bgmAudio.paused) playWithRetry(bgmAudio);
     return;
   }
 
@@ -85,7 +102,7 @@ export function setPageAmbient(page: string) {
   if (bgmAudio) {
     bgmAudio.src = src;
     currentBgmSrc = src;
-    bgmAudio.play().catch(() => {});
+    playWithRetry(bgmAudio);
   }
 }
 

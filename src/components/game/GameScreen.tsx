@@ -9,7 +9,8 @@ import MiniGamesPage from '../page-minigames/MiniGamesPage';
 import TeaShopPage from '../page-teashop/TeaShopPage';
 import { useGameStore } from '../../stores/useGameStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
-import { playClick, playResolve } from '../../systems/soundEngine';
+import { useVideoPolling } from '../../hooks/useVideoPolling';
+import { playClick, playResolve, setPageAmbient } from '../../systems/soundEngine';
 import type { GamePage } from '../../types';
 
 type GameTab = 'combat' | 'tasks' | 'minigames' | 'teashop';
@@ -27,11 +28,23 @@ export default function GameScreen() {
   const showLevelUp = useAdventureStore((s) => s.showLevelUp);
   const chapter = useAdventureStore((s) => s.chapter);
   const dismissLevelUp = useAdventureStore((s) => s.dismissLevelUp);
+  const taskId = useAdventureStore((s) => s.taskId);
 
-  // Sync external navigation to tabs
+  // Poll for victory image + video while user is in game
+  useVideoPolling(taskId);
+
+  // Set battle music on initial mount (combat tab is default)
+  useEffect(() => {
+    setPageAmbient('battle');
+  }, []);
+
+  // Sync external navigation to tabs + music
   useEffect(() => {
     const tab = PAGE_TO_TAB[currentPage];
-    if (tab) setActiveTab(tab);
+    if (tab) {
+      setActiveTab(tab);
+      setPageAmbient(tab === 'combat' ? 'battle' : 'gamescreen');
+    }
   }, [currentPage]);
 
   const tabItems: TabItem[] = [
@@ -66,6 +79,8 @@ export default function GameScreen() {
           onChange={(key) => {
             playClick();
             setActiveTab(key as GameTab);
+            if (key === 'combat') setPageAmbient('battle');
+            else setPageAmbient('gamescreen');
           }}
           leafAnimation
         />

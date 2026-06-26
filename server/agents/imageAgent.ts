@@ -1,22 +1,92 @@
 /**
- * Agent 2: Image Generation (Gemini)
- * Takes image prompts from Agent 1 → generates hero/monster PNG (512×512, transparent)
- * Uploads to Supabase Storage → returns CDN URLs
+ * Agent 2: Image Generation
+ * Tier 1: Gemini 2.5 Flash Image (Interactions API)
+ * Tier 2: Agnes AI (OpenAI-compatible images/generations)
+ * Tier 3: Local preset images by worryType
  */
 
-const IMAGE_STYLE_PREFIX = `Style anchors (from doc Section 6):
-- Warm parchment palette: backgrounds #f8f8f0 / rgb(247,243,223), text #725d42 / #794f27
-- Mint teal accent: #19c8b9, focus yellow #ffcc00
-- Pill shapes (12–50px radius), 3D pixel-stack shadows (Nintendo game-button aesthetic)
-- Nunito + Noto Sans SC fonts, weights 500–900, never below 400
-- No pure black, no cold gray, no sharp right angles, no blue focus rings
-- Cozy flat-illustration style, pastel polka-dot textures, pastoral atmosphere
-- Image target: 512×512px PNG, no background (transparent)
-- NOT Animal Crossing fan art — independent original illustration in similar warm game style, 8k`;
+import fs from 'fs';
+import path from 'path';
+
+export const IMAGE_STYLE_PREFIX = `Style: cozy flat-illustration, warm parchment palette (#f8f8f0), mint teal accent (#19c8b9), pill shapes, Nintendo game-button aesthetic, pastel polka-dot textures, pastoral atmosphere. NOT Animal Crossing fan art — independent original illustration in similar warm game style. 512x512px PNG, transparent background.`;
 
 export interface GeneratedImages {
   heroUrl: string;
   monsterUrl: string;
+}
+
+export interface AgnesImageConfig {
+  agnesKey?: string;
+  agnesBaseUrl?: string;
+  agnesImageModel?: string;
+}
+
+const WORRY_IMAGES: Record<string, { hero: string; monster: string }> = {
+  work_stress:        { hero: '/hero-monster/panda.png',    monster: '/hero-monster/hamster.png' },
+  learning_growth:    { hero: '/hero-monster/owl.png',      monster: '/hero-monster/hamster.png' },
+  interpersonal:      { hero: '/hero-monster/capybara.png', monster: '/hero-monster/hedgehog.png' },
+  family_origin:      { hero: '/hero-monster/deer.png',     monster: '/hero-monster/hermitcrab.png' },
+  social_environment: { hero: '/hero-monster/koala.png',    monster: '/hero-monster/chameleon.png' },
+  physical_health:    { hero: '/hero-monster/otter.png',    monster: '/hero-monster/raccoon.png' },
+  time_management:    { hero: '/hero-monster/turtle.png',   monster: '/hero-monster/ant.png' },
+  emotion_management: { hero: '/hero-monster/sloth.png',    monster: '/hero-monster/pufferfish.png' },
+};
+
+const GENERATED_DIR = '/tmp/claude-generated-images';
+const SERVER_URL = `http://localhost:${process.env.PORT || 3001}`;
+
+function saveBase64Image(base64: string, filename: string): string {
+  fs.mkdirSync(GENERATED_DIR, { recursive: true });
+  fs.writeFileSync(path.join(GENERATED_DIR, `${filename}.png`), Buffer.from(base64, 'base64'));
+  return `${SERVER_URL}/generated-images/${filename}.png`;
+}
+
+async function generateWithGemini(prompt: string, filename: string, apiKey: string): Promise<string> {
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+    body: JSON.stringify({
+      model: 'gemini-2.5-flash-image',
+      input: `${IMAGE_STYLE_PREFIX}\n\n${prompt}`,
+      stream: false,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`Gemini image API ${res.status}: ${JSON.stringify(err)}`);
+  }
+  const data = await res.json();
+  const imageStep = data?.steps?.flatMap((s: any) => s.content ?? []).find((c: any) => c.type === 'image');
+  if (!imageStep?.data) throw new Error('No image data in Gemini response');
+  console.log(`[imageAgent] Gemini generated ${filename}`);
+  return saveBase64Image(imageStep.data, filename);
+}
+
+async function generateWithAgnes(prompt: string, filename: string, agnes: AgnesImageConfig): Promise<string> {
+  const baseUrl = agnes.agnesBaseUrl || 'https://apihub.agnes-ai.com/v1';
+  const res = await fetch(`${baseUrl}/images/generations`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${agnes.agnesKey}`,
+    },
+    body: JSON.stringify({
+      model: agnes.agnesImageModel || 'agnes-image-2.1-flash',
+      prompt: `${IMAGE_STYLE_PREFIX}\n\n${prompt}`,
+      n: 1,
+      size: '512x512',
+      response_format: 'b64_json',
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`Agnes image API ${res.status}: ${JSON.stringify(err)}`);
+  }
+  const data = await res.json();
+  const b64 = data?.data?.[0]?.b64_json;
+  if (!b64) throw new Error('No image data in Agnes response');
+  console.log(`[imageAgent] Agnes AI generated ${filename}`);
+  return saveBase64Image(b64, filename);
 }
 
 export async function generateImages(
@@ -24,87 +94,57 @@ export async function generateImages(
   imagePromptMonster: string,
   worryType: string,
   geminiApiKey: string,
-  supabaseToken?: string,
+  _supabaseToken?: string,
+  agnes?: AgnesImageConfig,
 ): Promise<GeneratedImages> {
+  const ts = Date.now();
+
+  // Tier 1: Gemini 2.5 Flash Image
   try {
-    // Generate hero image
-    const heroPromptFull = `${IMAGE_STYLE_PREFIX}\n\n${imagePromptHero}\n\n--ar 1:1`;
-    const heroUrl = await generateAndUploadImage(heroPromptFull, `hero-${worryType}`, geminiApiKey, supabaseToken);
-
-    // Generate monster image
-    const monsterPromptFull = `${IMAGE_STYLE_PREFIX}\n\n${imagePromptMonster}\n\n--ar 1:1`;
-    const monsterUrl = await generateAndUploadImage(
-      monsterPromptFull,
-      `monster-${worryType}`,
-      geminiApiKey,
-      supabaseToken,
-    );
-
-    return {
-      heroUrl,
-      monsterUrl,
-    };
-  } catch (error) {
-    console.error('imageAgent error:', error);
-    throw error;
+    const [heroUrl, monsterUrl] = await Promise.all([
+      generateWithGemini(imagePromptHero, `hero-${worryType}-${ts}`, geminiApiKey),
+      generateWithGemini(imagePromptMonster, `monster-${worryType}-${ts}`, geminiApiKey),
+    ]);
+    return { heroUrl, monsterUrl };
+  } catch (err) {
+    console.warn('[imageAgent] Gemini failed, trying Agnes AI:', (err as Error).message);
   }
+
+  // Tier 2: Agnes AI
+  if (agnes?.agnesKey) {
+    try {
+      const [heroUrl, monsterUrl] = await Promise.all([
+        generateWithAgnes(imagePromptHero, `hero-${worryType}-${ts}`, agnes),
+        generateWithAgnes(imagePromptMonster, `monster-${worryType}-${ts}`, agnes),
+      ]);
+      return { heroUrl, monsterUrl };
+    } catch (err) {
+      console.warn('[imageAgent] Agnes AI failed, using preset fallback:', (err as Error).message);
+    }
+  }
+
+  // Tier 3: local preset
+  console.warn('[imageAgent] Using local preset for', worryType);
+  return WORRY_IMAGES[worryType] ?? WORRY_IMAGES.work_stress;
 }
 
-async function generateAndUploadImage(
-  prompt: string,
-  filename: string,
+export async function generateVictoryImage(
+  victoryImagePrompt: string,
+  _heroUrl: string,
+  _monsterUrl: string,
   geminiApiKey: string,
-  supabaseToken?: string,
+  _supabaseToken?: string,
+  agnes?: AgnesImageConfig,
 ): Promise<string> {
-  // For now, use Gemini Vision API for image generation
-  // This will call an image generation model (e.g., Imagen via Gemini)
-  // TODO: Update to use Gemini's actual image generation when available
-
-  // Placeholder: use a mock generation or integrate with real image API
-  // Expected flow: call Gemini image endpoint → get PNG binary → upload to Supabase → return CDN URL
-
-  const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': geminiApiKey,
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              text: `Generate an image based on this prompt:\n${prompt}`,
-            },
-          ],
-        },
-      ],
-      generationConfig: {
-        temperature: 1,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 2048,
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(`Gemini API error: ${response.status} ${JSON.stringify(errorData)}`);
+  const filename = `victory-${Date.now()}`;
+  try {
+    return await generateWithGemini(victoryImagePrompt, filename, geminiApiKey);
+  } catch {
+    if (agnes?.agnesKey) {
+      try {
+        return await generateWithAgnes(victoryImagePrompt, filename, agnes);
+      } catch {}
+    }
+    return '';
   }
-
-  const data = await response.json();
-  console.log('Gemini response:', data);
-
-  // TODO: Parse image from response, upload to Supabase Storage
-  // For now, return placeholder URL
-  // Once actual image is generated:
-  // 1. Convert to PNG blob
-  // 2. Upload to Supabase: supabase.storage.from('hero-monster').upload(`${filename}.png`, blob)
-  // 3. Return public URL: https://<project>.supabase.co/storage/v1/object/public/hero-monster/{filename}.png
-
-  const mockUrl = `https://placeholder.com/images/${filename}.png`;
-  console.log(`[imageAgent] Generated ${filename} → ${mockUrl}`);
-
-  return mockUrl;
 }

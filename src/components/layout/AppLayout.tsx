@@ -23,8 +23,11 @@ export default function AppLayout({
 
   useEffect(() => {
     setPageAmbient(currentPage);
-    return () => stopAmbient();
   }, [currentPage]);
+
+  useEffect(() => {
+    return () => stopAmbient();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#F8F5EB' }}>

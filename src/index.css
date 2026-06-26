@@ -145,3 +145,23 @@ html, body, #root {
   max-height: 350px !important;
   max-width: 320px !important;
 }
+
+/* Voyage loading: CSS fallback for GSAP island animation */
+.voyage-loading svg #whole-island {
+  animation: islandBob 2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+.voyage-loading svg #tree {
+  animation: treeSway 2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+@keyframes islandBob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
+}
+@keyframes treeSway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(4deg); }
+}

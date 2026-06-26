@@ -30,6 +30,9 @@ export default function BattlePage() {
   const addCoins = useAdventureStore((s) => s.addCoins);
   const addExp = useAdventureStore((s) => s.addExp);
 
+  const victoryVideoUrl = useAdventureStore((s) => s.victoryVideoUrl);
+  const victoryImageUrl = useAdventureStore((s) => s.victoryImageUrl);
+
   const phase = useBattleStore((s) => s.phase);
   const heroActor = useBattleStore((s) => s.hero);
   const monsterActor = useBattleStore((s) => s.monster);
@@ -273,13 +276,92 @@ export default function BattlePage() {
         </div>
       </div>
 
-      {/* Victory */}
-      {phase === 'victory' && (
-        <Modal open title="🎉 净化成功！" typewriter={false} footer={null} onClose={() => {}}>
-          <div className="text-center py-4"><p className="text-lg font-bold mb-4" style={{ color: '#6fba2c' }}>心魔被净化了！</p>
-            <Button type="primary" size="large" onClick={() => { addCoins(50); addExp(50); playResolve(); navigateTo('victory'); }}>🌈 前往丰收祭 (+50🪙 +50EXP)</Button></div>
-        </Modal>
-      )}
+      {/* Victory fullscreen overlay — upgrades from spinner → image → video as media arrives */}
+      {phase === 'victory' && (() => {
+        const handleProceed = () => { addCoins(50); addExp(50); playResolve(); navigateTo('victory'); };
+
+        // Priority 1: video ready → fullscreen video
+        if (victoryVideoUrl) {
+          return (
+            <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+              <video
+                src={victoryVideoUrl}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+                onEnded={handleProceed}
+              />
+              <button
+                onClick={handleProceed}
+                className="absolute bottom-8 right-8 px-6 py-3 rounded-full font-extrabold text-white border-2 border-white/40 bg-black/40 hover:bg-black/60 transition-all"
+              >
+                跳过 →
+              </button>
+            </div>
+          );
+        }
+
+        // Priority 2: victory image ready → PNG modal (auto-upgrades when video arrives)
+        if (victoryImageUrl) {
+          return (
+            <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center overflow-y-auto py-8">
+              <div className="text-center max-w-md mx-auto px-4 w-full">
+                <motion.div
+                  animate={{ scale: [1, 1.15, 1], rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="text-6xl mb-4"
+                >
+                  🎊
+                </motion.div>
+                <h2 className="text-3xl font-extrabold text-white mb-1">净化成功！</h2>
+                <p className="text-white/60 text-sm mb-4">心魔已被感化</p>
+                <div className="rounded-3xl overflow-hidden border-4 border-white/20 mb-4">
+                  <img src={victoryImageUrl} alt="胜利场景" className="w-full h-auto" />
+                </div>
+                <p className="text-yellow-300 text-xs mb-5 animate-pulse">🎬 胜利动画生成中，稍候自动播放…</p>
+                <button
+                  onClick={handleProceed}
+                  className="px-8 py-3 rounded-full font-extrabold text-white border-2 border-[#2E7D32]"
+                  style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}
+                >
+                  🌈 前往丰收祭 (+50🪙 +50EXP)
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        // Priority 3: nothing ready yet → animated waiting state
+        return (
+          <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
+            <div className="text-center">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-7xl mb-6"
+              >
+                🎊
+              </motion.div>
+              <h2 className="text-3xl font-extrabold text-white mb-2">净化成功！</h2>
+              <p className="text-white/60 text-sm mb-6">心魔已被感化</p>
+              <motion.p
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="text-yellow-300 text-sm mb-6"
+              >
+                🎬 胜利动画生成中…
+              </motion.p>
+              <button
+                onClick={handleProceed}
+                className="px-8 py-3 rounded-full font-extrabold text-white border-2 border-[#2E7D32]"
+                style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}
+              >
+                🌈 前往丰收祭 (+50🪙 +50EXP)
+              </button>
+            </div>
+          </div>
+        );
+      })()}
       {phase === 'defeat' && isFirstBattle && (
         <Modal open title="💨 能量耗尽…" typewriter={false} footer={null} onClose={() => {}}>
           <div className="text-center py-4"><p className="text-lg font-bold mb-4" style={{ color: '#e05a5a' }}>呼……心魔太强了！</p>

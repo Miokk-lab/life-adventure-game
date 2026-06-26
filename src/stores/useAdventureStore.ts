@@ -4,11 +4,13 @@ import { INITIAL_STAMINA, INITIAL_COINS, INITIAL_HP, INITIAL_MP, TASK_MP_RESTORE
 
 interface AdventureState {
   adventureId: string | null;
+  taskId: string | null;
   hero: HeroData | null;
   monster: MonsterData | null;
   cbtAnalysis: string | null;
   victoryText: string | null;
   victoryVideoUrl: string | null;
+  victoryImageUrl: string | null;
 
   hp: number;
   maxHp: number;
@@ -42,6 +44,9 @@ interface AdventureState {
     victoryVideoUrl: string;
     battleSkills?: import('../types').BattleSkill[];
   }) => void;
+  setTaskId: (id: string) => void;
+  setVictoryImageUrl: (url: string) => void;
+  setVictoryVideoUrl: (url: string) => void;
   setTasks: (tasks: DailyTask[]) => void;
   completeTask: (taskId: string) => void;
   updateHp: (delta: number) => void;
@@ -63,11 +68,13 @@ interface AdventureState {
 
 const initialState = {
   adventureId: null,
+  taskId: null,
   hero: null,
   monster: null,
   cbtAnalysis: null,
   victoryText: null,
   victoryVideoUrl: null,
+  victoryImageUrl: null,
   hp: INITIAL_HP,
   maxHp: INITIAL_HP,
   mp: INITIAL_MP,
@@ -105,6 +112,10 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
       victoryVideoUrl: data.victoryVideoUrl,
       battleSkills: data.battleSkills ?? [],
     }),
+
+  setTaskId: (id) => set({ taskId: id }),
+  setVictoryImageUrl: (url) => set({ victoryImageUrl: url }),
+  setVictoryVideoUrl: (url) => set({ victoryVideoUrl: url }),
 
   setTasks: (tasks) => set({ tasks }),
 

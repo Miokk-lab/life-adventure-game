@@ -1,6 +1,6 @@
 import { useGameStore } from '../../stores/useGameStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
-import { Button, Card, Title, Typewriter } from 'animal-island-ui';
+import { Button, Card, Title } from 'animal-island-ui';
 import { motion } from 'motion/react';
 
 export default function AnalysisPage() {
@@ -74,15 +74,27 @@ export default function AnalysisPage() {
                 <h3 className="text-base font-extrabold mt-1" style={{ color: '#5D4037' }}>CBT一体两面分析</h3>
               </div>
               <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                {cbtAnalysis ? (
-                  <div className="p-3 rounded-xl border-2 border-[#C4B89E] bg-[#FFFBF5]">
-                    <div className="text-xs leading-relaxed break-words" style={{ color: '#5D4037' }}>
-                      <Typewriter speed={15}>
-                        <span>{cbtAnalysis}</span>
-                      </Typewriter>
-                    </div>
-                  </div>
-                ) : (
+                {cbtAnalysis ? (() => {
+                  const SECTION_STYLES = [
+                    { bg: '#E8F5E9', border: '#4CAF50', icon: '✨', label: '看见力量' },
+                    { bg: '#FFF8E1', border: '#FF9800', icon: '🔍', label: '识别陷阱' },
+                    { bg: '#E3F2FD', border: '#2196F3', icon: '🌱', label: '小步行动' },
+                  ];
+                  const sections = cbtAnalysis.split('\n\n').filter(Boolean).slice(0, 3);
+                  return sections.map((para, i) => {
+                    const style = SECTION_STYLES[i] ?? SECTION_STYLES[0];
+                    // Strip ①②③【label】 prefix
+                    const body = para.replace(/^[①②③]【[^】]*】\s*/, '').trim();
+                    return (
+                      <div key={i} style={{ background: style.bg, border: `2px solid ${style.border}`, borderRadius: 16, padding: '10px 14px' }}>
+                        <p style={{ fontWeight: 800, color: style.border, fontSize: 11, marginBottom: 4 }}>
+                          {style.icon} {style.label}
+                        </p>
+                        <p style={{ fontSize: 12, lineHeight: 1.7, color: '#5D4037' }}>{body}</p>
+                      </div>
+                    );
+                  });
+                })() : (
                   <div className="p-3 text-center text-xs" style={{ color: '#9F927D' }}>
                     心理分析生成中…
                   </div>

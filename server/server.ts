@@ -1,12 +1,10 @@
-/**
- * Mind Island Adventure — Express Backend
- * DeepSeek (text) + Gemini (image) + TBD (video) pipeline
- * Job queue with polling status
- */
+import 'dotenv/config';
+import fs from 'fs';
+fs.mkdirSync('/tmp/claude-generated-images', { recursive: true });
 
 import express from 'express';
 import type { Request, Response } from 'express';
-import { jobQueue } from './jobQueue';
+import { jobQueue, getOfflinePreset } from './jobQueue';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -24,6 +22,9 @@ app.use((_req, res, next) => {
   }
   next();
 });
+
+// ── Serve AI-generated images ──
+app.use('/generated-images', express.static('/tmp/claude-generated-images'));
 
 // ── Health check ──
 app.get('/api/health', (_req, res) => {
@@ -119,7 +120,8 @@ app.get('/api/adventure/:id/data', (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Task not found' });
   }
 
-  if (job.status === 'pending' || job.status === 'text' || job.status === 'image') {
+  // Only block on pending/text — image and later statuses have enough data for battle
+  if (job.status === 'pending' || job.status === 'text') {
     return res.status(202).json({ error: 'Still generating, check /status for progress' });
   }
 
@@ -128,18 +130,47 @@ app.get('/api/adventure/:id/data', (req: Request, res: Response) => {
     status: job.status,
   };
 
-  if (job.status === 'complete') {
+  if (
+    job.status === 'image_complete' ||
+    job.status === 'victory_image_ready' ||
+    job.status === 'video_complete' ||
+    job.status === 'complete' ||
+    job.status === 'image'
+  ) {
     response.data = {
       ...job.textContent,
       heroUrl: job.images?.heroUrl,
       monsterUrl: job.images?.monsterUrl,
-      videoUrl: job.video?.videoUrl,
+      videoUrl: job.video?.videoUrl ?? null,
     };
   } else if (job.status === 'fallback' || job.status === 'error') {
     response.data = job.fallbackData || job.textContent;
   }
 
   res.json(response);
+});
+
+// ── Video/Victory Image Status (background generation polling) ──
+app.get('/api/adventure/:id/video-status', (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const job = jobQueue.getJob(id);
+  if (!job) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+
+  res.json({
+    status: job.status,
+    ready: job.status === 'video_complete',
+    victoryImageUrl: job.victoryImageUrl ?? null,
+    videoUrl: job.video?.videoUrl ?? null,
+  });
+});
+
+// ── Offline preset (instant, no AI) ──
+app.get('/api/adventure/offline/:worryType', (req: Request, res: Response) => {
+  const preset = getOfflinePreset(req.params.worryType);
+  res.json({ status: 'fallback', data: preset });
 });
 
 // ── Auth stub ──
