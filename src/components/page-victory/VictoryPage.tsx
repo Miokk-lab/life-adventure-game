@@ -8,6 +8,7 @@ export default function VictoryPage() {
   const hero = useAdventureStore((s) => s.hero);
   const monster = useAdventureStore((s) => s.monster);
   const victoryText = useAdventureStore((s) => s.victoryText);
+  const victoryVideoUrl = useAdventureStore((s) => s.victoryVideoUrl);
   const chapter = useAdventureStore((s) => s.chapter);
   const exp = useAdventureStore((s) => s.exp);
   const reset = useAdventureStore((s) => s.reset);
@@ -79,6 +80,27 @@ export default function VictoryPage() {
           </div>
         </div>
       </motion.div>
+
+      {victoryVideoUrl && (
+        <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="mb-8">
+          <Card className="rounded-[32px] p-4 shadow-[0_8px_0_0_#C4B89E] border-4 border-[#725D42]">
+            <div className="relative w-full rounded-2xl overflow-hidden bg-black">
+              <video
+                src={victoryVideoUrl}
+                autoPlay
+                muted
+                controls
+                loop
+                className="w-full h-auto"
+                style={{ maxHeight: '400px' }}
+              />
+            </div>
+            <p className="text-center text-xs mt-3 italic" style={{ color: '#A08E75' }}>
+              🎬 心魔净化动画 · 心灵的治愈时刻
+            </p>
+          </Card>
+        </motion.div>
+      )}
 
       {victoryText && (
         <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="mb-8">

@@ -70,48 +70,26 @@ export default function AnalysisPage() {
           >
             <Card className="h-full rounded-[32px] p-5 shadow-[0_8px_0_0_#C4B89E] border-4 border-[#725D42]">
               <div className="text-center mb-4">
-                <span className="text-[10px] font-black" style={{ color: '#A08E75' }}>📋 心智松土谱图</span>
-                <h3 className="text-base font-extrabold mt-1" style={{ color: '#5D4037' }}>心结溯源剖析</h3>
-                <div className="flex justify-center gap-0.5 mt-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span key={i}>{i < 3 ? '⭐' : '☆'}</span>
-                  ))}
-                </div>
+                <span className="text-[10px] font-black" style={{ color: '#A08E75' }}>📋 心理诊断卡</span>
+                <h3 className="text-base font-extrabold mt-1" style={{ color: '#5D4037' }}>CBT一体两面分析</h3>
               </div>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-[10px] font-black flex items-center gap-1" style={{ color: '#E57373' }}>
-                    <span className="w-2 h-2 rounded-full bg-red-400" /> 外部环境
-                  </p>
-                  <p className="text-xs ml-3" style={{ color: '#725d42' }}>
-                    {monster?.attacks?.[1] ?? '环境因素分析中…'}
-                  </p>
-                </div>
-                <div className="border-t border-dashed border-[#C4B89E]" />
-                <div>
-                  <p className="text-[10px] font-black flex items-center gap-1" style={{ color: '#FF9F1C' }}>
-                    <span className="w-2 h-2 rounded-full bg-orange-400" /> 内心原因
-                  </p>
-                  <p className="text-xs ml-3" style={{ color: '#725d42' }}>
-                    {monster?.attacks?.[2] ?? '内心因素分析中…'}
-                  </p>
-                </div>
-                <div className="border-t border-dashed border-[#C4B89E]" />
-                <div>
-                  <p className="text-[10px] font-black flex items-center gap-1" style={{ color: '#3A8D63' }}>
-                    🔍 核心挑战
-                  </p>
-                  <div className="text-xs font-bold ml-3 max-h-[200px] overflow-y-auto break-words" style={{ color: '#2E7D32' }}>
-                    {cbtAnalysis ? (
-                      <Typewriter speed={20}>
+              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                {cbtAnalysis ? (
+                  <div className="p-3 rounded-xl border-2 border-[#C4B89E] bg-[#FFFBF5]">
+                    <div className="text-xs leading-relaxed break-words" style={{ color: '#5D4037' }}>
+                      <Typewriter speed={15}>
                         <span>{cbtAnalysis}</span>
                       </Typewriter>
-                    ) : '探索中…'}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="p-3 text-center text-xs" style={{ color: '#9F927D' }}>
+                    心理分析生成中…
+                  </div>
+                )}
               </div>
               <div className="text-center mt-3 pt-3 border-t border-[#FAF7EC]">
-                <p className="text-[9px] italic" style={{ color: '#A08E75' }}>烦恼一体两面 · CBT视角</p>
+                <p className="text-[9px] italic" style={{ color: '#A08E75' }}>烦恼一体两面 · 正向品质探寻</p>
               </div>
             </Card>
           </motion.div>
