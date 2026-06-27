@@ -111,8 +111,8 @@ const INTERPERSONAL: CategoryPreset = {
     skills: [],
   },
   monster: {
-    name: '敏感豪猪「刺刺魔」',
-    story: '一只因为害怕受伤而竖起全身尖刺的豪猪。它渴望拥抱，但每次有人靠近，它就本能地竖起尖刺——然后那些人真的走远了。"看吧，果然没有人喜欢我。"它悲伤地想着。',
+    name: '敏感刺猬「刺刺魔」',
+    story: '一只因为害怕受伤而竖起全身尖刺的刺猬。它渴望拥抱，但每次有人靠近，它就本能地竖起尖刺——然后那些人真的走远了。"看吧，果然没有人喜欢我。"它悲伤地想着。',
     attacks: ['流言回响：脑中挥之不去的他人看法', '防御姿态：用冷漠和挑剔排斥他人以保护自己', '社交过载：在人际交往中过分消耗心理能量'],
     imageUrl: '/hero-monster/hedgehog.png',
   },
@@ -346,7 +346,7 @@ export interface OfflinePreset {
   tasks: DailyTask[];
 }
 
-export function getOfflinePreset(worryText: string, worryType: WorryCategory): OfflinePreset {
+export function getOfflinePreset(worryText: string, worryType: WorryCategory, language = 'zh'): OfflinePreset {
   const preset = PRESETS[worryType] ?? PRESETS.emotion_management;
 
   // Attach skill refs to hero
@@ -356,7 +356,7 @@ export function getOfflinePreset(worryText: string, worryType: WorryCategory): O
   };
 
   // Generate daily tasks
-  const tasks = generateDailyTasks(worryType, 1);
+  const tasks = generateDailyTasks(worryType, 1, language);
 
   return {
     hero: heroWithSkills,

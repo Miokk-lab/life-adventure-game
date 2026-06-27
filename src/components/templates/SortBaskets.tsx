@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Modal } from 'animal-island-ui';
 import { motion, AnimatePresence } from 'motion/react';
 import { playCollect, playResolve, playHurt } from '../../systems/soundEngine';
+import { useTranslations } from '../../i18n';
 
 interface Props { title: string; description: string; items: { text: string; basket: string }[]; baskets: { key: string; label: string; emoji: string }[]; onComplete: () => void; onClose: () => void; }
 
@@ -11,13 +12,14 @@ export default function SortBaskets({ title, description, items, baskets, onComp
   const [feedback, setFeedback] = useState('');
   const [status, setStatus] = useState<'sorting'|'correct'|'wrong'>('sorting');
   const current = items[idx];
+  const tr = useTranslations().templates;
 
   const handleSort = (basket: string) => {
     if (!current) return;
     if (basket === current.basket) {
       playCollect();
       setStatus('correct');
-      setFeedback(`✅ 正确！${current.text} 属于「${baskets.find(b=>b.key===basket)?.label}」`);
+      setFeedback(tr.sortCorrect.replace('{text}', current.text).replace('{label}', baskets.find(b=>b.key===basket)?.label ?? ''));
       setTimeout(() => {
         if (idx + 1 >= items.length) { setDone(true); playResolve(); }
         else { setIdx(i => i + 1); setStatus('sorting'); setFeedback(''); }
@@ -25,7 +27,7 @@ export default function SortBaskets({ title, description, items, baskets, onComp
     } else {
       playHurt();
       setStatus('wrong');
-      setFeedback(`❌ 再想想？「${current.text}」应该放在哪里呢？`);
+      setFeedback(tr.sortWrong.replace('{text}', current.text));
       setTimeout(() => { setStatus('sorting'); setFeedback(''); }, 1000);
     }
   };
@@ -38,7 +40,7 @@ export default function SortBaskets({ title, description, items, baskets, onComp
           <>
             <motion.div key={idx} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="p-4 rounded-2xl border-2 mb-4 w-full max-w-sm"
               style={{ borderColor: status === 'correct' ? '#6fba2c' : status === 'wrong' ? '#e05a5a' : '#e8e2d6', background: '#fdfaf3' }}>
-              <p className="text-xs font-bold mb-1" style={{ color: '#9f927d' }}>第 {idx+1}/{items.length} 项</p>
+              <p className="text-xs font-bold mb-1" style={{ color: '#9f927d' }}>{tr.sortCounter.replace('{idx}', String(idx+1)).replace('{total}', String(items.length))}</p>
               <p className="text-lg font-extrabold" style={{ color: '#725d42' }}>{current?.text}</p>
             </motion.div>
             {feedback && <p className="text-xs font-bold mb-3" style={{ color: status === 'correct' ? '#6fba2c' : '#e05a5a' }}>{feedback}</p>}
@@ -55,9 +57,9 @@ export default function SortBaskets({ title, description, items, baskets, onComp
         ) : (
           <div className="text-center">
             <p className="text-2xl mb-2">🌾</p>
-            <p className="text-lg font-extrabold" style={{ color: '#6fba2c' }}>全部分类完成！</p>
+            <p className="text-lg font-extrabold" style={{ color: '#6fba2c' }}>{tr.sortDone}</p>
             <button onClick={onComplete} className="mt-4 px-6 py-3 rounded-full text-white font-extrabold border-2 border-[#2E7D32]"
-              style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}>领取奖励 ✨</button>
+              style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}>{tr.rewardBtn}</button>
           </div>
         )}
       </div>

@@ -3,6 +3,7 @@ import { Wallet } from 'animal-island-ui';
 import { useAdventureStore } from '../../stores/useAdventureStore';
 import { useUserStore } from '../../stores/useUserStore';
 import { useGameStore } from '../../stores/useGameStore';
+import { useTranslations } from '../../i18n';
 
 export default function TopBar() {
   const hp = useAdventureStore((s) => s.hp);
@@ -16,6 +17,7 @@ export default function TopBar() {
   const coins = useAdventureStore((s) => s.coins);
   const user = useUserStore((s) => s.user);
   const navigateTo = useGameStore((s) => s.navigateTo);
+  const t = useTranslations().topbar;
 
   const expForNext = chapter >= 3 ? 200 : chapter >= 2 ? 100 : 50;
 
@@ -26,7 +28,7 @@ export default function TopBar() {
       {/* Avatar — click to logout — nickname above, level below */}
       <button onClick={() => navigateTo('login')} title="退出登陆" className="shrink-0 flex flex-col items-center gap-0.5">
         <span className="text-[9px] font-extrabold leading-tight truncate max-w-[60px]" style={{ color: '#725d42' }}>
-          {user?.nickname || '岛民'}
+          {user?.nickname || t.defaultNickname}
         </span>
         <div className="w-9 h-9 rounded-full flex items-center justify-center relative overflow-hidden"
           style={{ background: '#F2EDE0', border: '3px solid #725D42' }}>
@@ -82,13 +84,11 @@ export default function TopBar() {
       <div className="flex items-center gap-1 shrink-0">
         <Wallet value={coins} size="small" />
         <button onClick={() => navigateTo('login')} className="flex items-center gap-0.5 px-1.5 py-1 rounded-full text-[10px] font-bold border-2 hover:bg-[#F2EDE0] transition-all"
-          style={{ borderColor: '#e8e2d6', color: '#725D42' }}>✈️<span className="hidden sm:inline">机场</span></button>
+          style={{ borderColor: '#e8e2d6', color: '#725D42' }}>✈️<span className="hidden sm:inline">{t.airport}</span></button>
         <button onClick={() => navigateTo('worry')} className="flex items-center gap-0.5 px-1.5 py-1 rounded-full text-[10px] font-bold border-2 hover:bg-[#F2EDE0] transition-all"
-          style={{ borderColor: '#e8e2d6', color: '#725D42' }}>📮<span className="hidden sm:inline">寄信</span></button>
-        <button className="flex items-center gap-0.5 px-1.5 py-1 rounded-full text-[10px] font-bold border-2 hover:bg-[#F2EDE0] transition-all"
-          style={{ borderColor: '#e8e2d6', color: '#725D42' }} title="语言">🌐<span className="hidden sm:inline">中</span></button>
-        <button className="flex items-center gap-0.5 px-1.5 py-1 rounded-full text-[10px] font-bold border-2 hover:bg-[#F2EDE0] transition-all"
-          style={{ borderColor: '#e8e2d6', color: '#725D42' }} title="设置">⚙️<span className="hidden sm:inline">设置</span></button>
+          style={{ borderColor: '#e8e2d6', color: '#725D42' }}>📮<span className="hidden sm:inline">{t.mail}</span></button>
+<button className="flex items-center gap-0.5 px-1.5 py-1 rounded-full text-[10px] font-bold border-2 hover:bg-[#F2EDE0] transition-all"
+          style={{ borderColor: '#e8e2d6', color: '#725D42' }} title={t.settings}>⚙️<span className="hidden sm:inline">{t.settings}</span></button>
       </div>
     </header>
   );

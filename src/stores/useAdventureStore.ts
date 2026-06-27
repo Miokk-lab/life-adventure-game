@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { HeroData, MonsterData, Companion, GalleryItem, DailyTask } from '../types';
 import { INITIAL_STAMINA, INITIAL_COINS, INITIAL_HP, INITIAL_MP, TASK_MP_RESTORE, TASK_EXP, TASK_COINS, TASK_STAMINA_COST, EXP_L1, EXP_L2 } from '../constants';
 
@@ -102,7 +103,9 @@ const initialState = {
   showLevelUp: false,
 };
 
-export const useAdventureStore = create<AdventureState>((set, get) => ({
+export const useAdventureStore = create<AdventureState>()(
+  persist(
+    (set, get) => ({
   ...initialState,
 
   setAdventureData: (data) =>
@@ -194,4 +197,16 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
 
   dismissLevelUp: () => set({ showLevelUp: false }),
   reset: () => set(initialState),
-}));
+    }),
+    {
+      name: 'life-adventure-store',
+      partialize: (s) => ({
+        hp: s.hp,
+        maxHp: s.maxHp,
+        mp: s.mp,
+        maxMp: s.maxMp,
+        monsterHp: s.monsterHp,
+      }),
+    }
+  )
+);

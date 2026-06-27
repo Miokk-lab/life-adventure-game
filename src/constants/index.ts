@@ -11,6 +11,7 @@ export const PAGES: Record<GamePage, { title: string; subtitle: string }> = {
   minigames: { title: '静心小憩营地', subtitle: '星空下的露营篝火' },
   teashop: { title: '狸克花果特调茶饮店', subtitle: '鸽子巢咖啡馆分店' },
   victory: { title: '心灵雨过天晴', subtitle: '丰收祭：彩虹奇迹广场' },
+  help: { title: '新手指南', subtitle: '帮助中心 · 找到你需要的答案' },
 };
 
 export const WORRY_CATEGORIES: { key: WorryCategory; label: string; emoji: string; color: string }[] = [

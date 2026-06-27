@@ -11,8 +11,8 @@ function seededRandom(seed: number): () => number {
   return () => { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
 }
 
-export function generateDailyTasks(worryType: WorryCategory, _chapter: number): DailyTask[] {
-  const content = getWorryContent(worryType);
+export function generateDailyTasks(worryType: WorryCategory, _chapter: number, language = 'zh'): DailyTask[] {
+  const content = getWorryContent(worryType, language);
   const seed = getDateSeed();
   const rand = seededRandom(seed);
   // Pick 3-5 tasks from this worry type's pool

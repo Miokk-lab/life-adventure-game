@@ -20,7 +20,8 @@ export type GamePage =
   | 'tasks'
   | 'minigames'
   | 'teashop'
-  | 'victory';
+  | 'victory'
+  | 'help';
 
 export type GamePhase =
   | 'idle'

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
+import { useLanguageStore } from '../../stores/useLanguageStore';
+import { useTranslations } from '../../i18n';
 import { Loading, Typewriter, Modal, Button, Card } from 'animal-island-ui';
 import { motion } from 'motion/react';
 import { getOfflinePreset, VICTORY_VIDEO_MAP } from '../../data/presets';
@@ -37,22 +39,19 @@ interface DataResponse {
   };
 }
 
-const PHASES = [
-  { text: '你内心原本宁静的岛屿，住着很多可爱的小动物。但因为烦恼化作心魔，迷雾笼罩了这片土地…' },
-  { text: '小动物们陷入混乱，内心呼唤守护者登场…你的英雄正在赶来！' },
-  { text: '这股烦恼将你带向了心魔的专属岛屿…准备直面内心！' },
-  { text: '靠岸！英雄已就位，心魔等着你！' },
-];
-
 const API_URL = 'http://localhost:3001';
 
 export default function VoyagePage() {
   const worryText = useGameStore((s) => s.worryText);
   const worryType = useGameStore((s) => s.worryType);
   const navigateTo = useGameStore((s) => s.navigateTo);
+  const language = useLanguageStore((s) => s.language);
   const setAdventureData = useAdventureStore((s) => s.setAdventureData);
   const setTasks = useAdventureStore((s) => s.setTasks);
   const saveTaskId = useAdventureStore((s) => s.setTaskId);
+
+  const tr = useTranslations();
+  const t = tr.voyage;
 
   const [progress, setProgress] = useState(0);
   const [phaseIndex, setPhaseIndex] = useState(0);
@@ -65,14 +64,16 @@ export default function VoyagePage() {
   const [offlineHeroName, setOfflineHeroName] = useState<string | null>(null);
   const detectedTextSetRef = useRef(false);
 
-  // Auto-cycle story phases every 7s while loading (phases 0→1→2→loop, phase 3 on completion)
+  const phases = t.phases;
+
+  // Auto-cycle story phases every 7s while loading
   useEffect(() => {
     if (done) return;
     const id = setInterval(() => {
-      setPhaseIndex(i => (i >= PHASES.length - 2 ? 0 : i + 1));
+      setPhaseIndex(i => (i >= phases.length - 2 ? 0 : i + 1));
     }, 7000);
     return () => clearInterval(id);
-  }, [done]);
+  }, [done, phases.length]);
 
   // Smooth progress animation engine
   useEffect(() => {
@@ -92,17 +93,17 @@ export default function VoyagePage() {
         const res = await fetch(`${API_URL}/api/adventure/create`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ worryText, worryType }),
+          body: JSON.stringify({ worryText, worryType, language }),
         });
         const data = await res.json();
         if (!res.ok || !data.task_id) {
-          setErrorMsg(data.error || '创建冒险失败');
+          setErrorMsg(data.error || t.errorModal.createFailed);
           return;
         }
         setTaskId(data.task_id);
-        setSimulatingToward(65);  // slow crawl — never stops, keeps moving
+        setSimulatingToward(65);
       } catch {
-        setErrorMsg('网络连接失败');
+        setErrorMsg(t.errorModal.networkFailed);
       }
     };
 
@@ -118,7 +119,6 @@ export default function VoyagePage() {
         const res = await fetch(`${API_URL}/api/adventure/${taskId}/status`);
         const status: StatusResponse = await res.json();
 
-        // Text agent done — push target further, reveal names
         if (status.text_content && !detectedTextSetRef.current) {
           detectedTextSetRef.current = true;
           setSimulatingToward(88);
@@ -127,7 +127,7 @@ export default function VoyagePage() {
 
         if (status.status === 'error') {
           clearInterval(pollInterval);
-          setErrorMsg(status.error || '生成遇到问题');
+          setErrorMsg(status.error || t.errorModal.genFailed);
           return;
         }
 
@@ -144,9 +144,8 @@ export default function VoyagePage() {
           const data: DataResponse = await dataRes.json();
 
           if (data.data) {
-            const preset = getOfflinePreset('', worryType as WorryCategory);
+            const preset = getOfflinePreset('', worryType as WorryCategory, language);
 
-            // Merge AI skill names/descriptions onto preset mechanical structure
             const aiSkillMap = Object.fromEntries(
               (data.data.battleSkillContent || []).map(s => [`${s.animal}_${s.level}`, s])
             );
@@ -155,29 +154,28 @@ export default function VoyagePage() {
               return ai ? { ...sk, name: ai.name, description: ai.description } : sk;
             });
 
-            // Use AI daily tasks if valid, fallback to preset
             const aiTasks = data.data.dailyTasks;
             const tasks = (aiTasks && aiTasks.length >= 3)
-              ? aiTasks.map((t, i) => ({
+              ? aiTasks.map((task, i) => ({
                   id: `ai_task_${i}`,
-                  type: t.type,
-                  description: t.description,
+                  type: task.type,
+                  description: task.description,
                   progress: 0,
-                  target: t.target,
+                  target: task.target,
                   completed: false,
-                  reward: t.reward,
+                  reward: task.reward,
                 }))
               : preset.tasks;
 
             setAdventureData({
               hero: {
-                name: data.data.heroName,
+                name: preset.hero.name,
                 story: data.data.heroStory,
                 skills: preset.hero.skills,
                 imageUrl: data.data.heroUrl || preset.hero.imageUrl,
               },
               monster: {
-                name: data.data.monsterName,
+                name: preset.monster.name,
                 story: data.data.monsterStory,
                 attacks: data.data.monsterAttacks,
                 imageUrl: data.data.monsterUrl || preset.monster.imageUrl,
@@ -195,13 +193,13 @@ export default function VoyagePage() {
           setTimeout(() => {
             setProgress(100);
             setDone(true);
-            setPhaseIndex(PHASES.length - 1);
+            setPhaseIndex(phases.length - 1);
             setTimeout(() => navigateTo('analysis'), 1500);
           }, 400);
         }
       } catch {
         clearInterval(pollInterval);
-        setErrorMsg('网络连接失败');
+        setErrorMsg(t.errorModal.networkFailed);
       }
     }, 2000);
 
@@ -220,7 +218,7 @@ export default function VoyagePage() {
   };
 
   const handleGoOffline = () => {
-    const preset = getOfflinePreset('', worryType as WorryCategory);
+    const preset = getOfflinePreset('', worryType as WorryCategory, language);
     setAdventureData({
       hero: preset.hero,
       monster: preset.monster,
@@ -242,12 +240,10 @@ export default function VoyagePage() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      {/* Coconut tree Loading background overlay — stable key prevents animation resets */}
       <div className="absolute inset-0">
         <Loading key="voyage-loading" active={true} className="voyage-loading" style={{ position: 'absolute', inset: 0, height: '100%' }} />
       </div>
 
-      {/* Content overlay */}
       <div className="relative z-10 w-full max-w-lg mx-auto px-4 text-center">
         <motion.div className="text-6xl mb-6"
           animate={{ y: [0, -10, 0], rotate: [-2, 2, -2] }}
@@ -264,17 +260,17 @@ export default function VoyagePage() {
               transition={{ duration: 0.8, ease: 'easeOut' }} />
           </div>
           <p className="text-sm font-extrabold mt-2" style={{ color: '#f8f8f0', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
-            {Math.round(progress)}% — 航向迷雾之岛
+            {Math.round(progress)}% — {t.progressLabel}
           </p>
         </div>
 
         <Card className="text-left shadow-[0_8px_0_0_#C4B89E] border-4 border-[#725D42] rounded-[32px] bg-white/90">
           <Typewriter speed={45} trigger={phaseIndex}>
-            {PHASES[phaseIndex]?.text ?? ''}
+            {phases[phaseIndex] ?? ''}
           </Typewriter>
           {detectedText && (
             <p className="text-xs font-bold mt-2" style={{ color: '#19c8b9' }}>
-              ✍️ 英雄「{detectedText.heroName}」已就位！心魔「{detectedText.monsterName}」正在逼近…
+              {t.heroReady.replace('{hero}', detectedText.heroName).replace('{monster}', detectedText.monsterName)}
             </p>
           )}
         </Card>
@@ -282,12 +278,12 @@ export default function VoyagePage() {
 
       {/* Error modal */}
       {errorMsg && (
-        <Modal open title="🌊 海上出现了风浪" typewriter={false} onClose={() => {}} footer={null}>
+        <Modal open title={t.errorModal.title} typewriter={false} onClose={() => {}} footer={null}>
           <div className="text-center py-4">
             <p className="text-sm mb-6" style={{ color: '#725d42' }}>{errorMsg}</p>
             <div className="flex gap-3 justify-center">
-              <Button type="default" onClick={handleRetry}>⟳ 再试一次</Button>
-              <Button type="primary" onClick={handleGoOffline}>🏝️ 前往最近小岛</Button>
+              <Button type="default" onClick={handleRetry}>{t.errorModal.retry}</Button>
+              <Button type="primary" onClick={handleGoOffline}>{t.errorModal.offline}</Button>
             </div>
           </div>
         </Modal>
@@ -295,17 +291,17 @@ export default function VoyagePage() {
 
       {/* Offline character confirmation modal */}
       {offlineHeroName && (
-        <Modal open title="🏝️ 已抵达离岛" typewriter={false} onClose={() => {}} footer={null}>
+        <Modal open title={t.offlineModal.title} typewriter={false} onClose={() => {}} footer={null}>
           <div className="text-center py-4">
             <p className="text-4xl mb-3">🌟</p>
             <p className="text-base font-extrabold mb-2" style={{ color: '#725d42' }}>
-              已为你召唤英雄「{offlineHeroName}」
+              {t.offlineModal.heroCalled.replace('{hero}', offlineHeroName)}
             </p>
             <p className="text-sm mb-6" style={{ color: '#9f927d' }}>
-              离岛守护者将伴你踏上心灵之旅，即将启程！
+              {t.offlineModal.subtitle}
             </p>
             <Button type="primary" size="large" onClick={handleConfirmOffline}>
-              ✨ 出发！
+              {t.offlineModal.startBtn}
             </Button>
           </div>
         </Modal>

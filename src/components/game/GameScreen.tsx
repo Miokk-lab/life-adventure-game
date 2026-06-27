@@ -11,6 +11,7 @@ import { useGameStore } from '../../stores/useGameStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
 import { useVideoPolling } from '../../hooks/useVideoPolling';
 import { playClick, playResolve, setPageAmbient } from '../../systems/soundEngine';
+import { useTranslations } from '../../i18n';
 import type { GamePage } from '../../types';
 
 type GameTab = 'combat' | 'tasks' | 'minigames' | 'teashop';
@@ -29,6 +30,9 @@ export default function GameScreen() {
   const chapter = useAdventureStore((s) => s.chapter);
   const dismissLevelUp = useAdventureStore((s) => s.dismissLevelUp);
   const taskId = useAdventureStore((s) => s.taskId);
+  const tr = useTranslations();
+  const sb = tr.sidebar;
+  const gs = tr.gamescreen;
 
   // Poll for victory image + video while user is in game
   useVideoPolling(taskId);
@@ -50,22 +54,22 @@ export default function GameScreen() {
   const tabItems: TabItem[] = [
     {
       key: 'combat',
-      label: <span className="flex items-center gap-1.5"><span>⚔️</span><span className="hidden sm:inline">对决</span></span>,
+      label: <span className="flex items-center gap-1.5"><span>⚔️</span><span className="hidden sm:inline">{sb.battle}</span></span>,
       children: <BattlePage />,
     },
     {
       key: 'tasks',
-      label: <span className="flex items-center gap-1.5"><span>📋</span><span className="hidden sm:inline">任务</span></span>,
+      label: <span className="flex items-center gap-1.5"><span>📋</span><span className="hidden sm:inline">{sb.tasks}</span></span>,
       children: <TasksPage />,
     },
     {
       key: 'minigames',
-      label: <span className="flex items-center gap-1.5"><span>🏕️</span><span className="hidden sm:inline">静心</span></span>,
+      label: <span className="flex items-center gap-1.5"><span>🏕️</span><span className="hidden sm:inline">{sb.minigames}</span></span>,
       children: <MiniGamesPage />,
     },
     {
       key: 'teashop',
-      label: <span className="flex items-center gap-1.5"><span>🍵</span><span className="hidden sm:inline">花茶</span></span>,
+      label: <span className="flex items-center gap-1.5"><span>🍵</span><span className="hidden sm:inline">{sb.teashop}</span></span>,
       children: <TeaShopPage />,
     },
   ];
@@ -88,15 +92,15 @@ export default function GameScreen() {
       <Divider type="wave-yellow" />
       {/* Level-Up Celebration Modal */}
       {showLevelUp && (
-        <Modal open title="🎉 升级了！" typewriter={false} footer={null} onClose={dismissLevelUp} width={480}>
+        <Modal open title={gs.levelUpTitle} typewriter={false} footer={null} onClose={dismissLevelUp} width={480}>
           <motion.div className="text-center py-8" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
             <motion.div className="text-7xl mb-4" animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }} transition={{ duration: 1, repeat: Infinity }}>🌟</motion.div>
-            <p className="text-2xl font-extrabold" style={{ color: '#f5c31c' }}>升级到 Lv.{chapter}！</p>
+            <p className="text-2xl font-extrabold" style={{ color: '#f5c31c' }}>{gs.levelUpLevel.replace('{level}', String(chapter))}</p>
             <p className="text-sm mt-2" style={{ color: '#725d42' }}>
-              {chapter === 2 ? '解锁新技能！战斗力提升了！' : '达到最高等级！可以挑战最终Boss了！'}
+              {chapter === 2 ? gs.levelUpMsg2 : gs.levelUpMsg3}
             </p>
             <button onClick={() => { playResolve(); dismissLevelUp(); }} className="mt-6 px-8 py-3 rounded-full text-white font-extrabold border-2 border-[#2E7D32]"
-              style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}>太棒了！</button>
+              style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}>{gs.levelUpBtn}</button>
           </motion.div>
         </Modal>
       )}

@@ -8,17 +8,29 @@ import { Sword } from 'lucide-react';
 import ProgressBar from '../shared/ProgressBar';
 import FloatingText, { spawnFloatingText } from '../shared/FloatingText';
 import { playResolve, playHurt, playCollect } from '../../systems/soundEngine';
+import { VICTORY_VIDEO_MAP } from '../../data/presets';
+import { useTranslations } from '../../i18n';
+import { OnboardingTipManager } from '../onboarding';
 
-const COPING_TACTICS = [
-  { key: 'avoid', label: '躲避', emoji: '🐢', desc: '暂时远离压力源，给自己空间', mpCost: 10 },
-  { key: 'resist', label: '抵抗', emoji: '🦥', desc: '观察并命名情绪，与它保持距离', mpCost: 20 },
-  { key: 'adapt', label: '适应', emoji: '🐯', desc: '采取微小行动，打破无力感', mpCost: 20 },
-  { key: 'challenge', label: '挑战', emoji: '🦅', desc: '直面恐惧，做一件你一直在逃避的事', mpCost: 30 },
-  { key: 'transform', label: '转换', emoji: '🐍', desc: '换个角度看问题，寻找成长契机', mpCost: 20 },
+const COPING_TACTIC_KEYS = [
+  { key: 'avoid', emoji: '🐢', mpCost: 10 },
+  { key: 'resist', emoji: '🦥', mpCost: 20 },
+  { key: 'adapt', emoji: '🐯', mpCost: 20 },
+  { key: 'challenge', emoji: '🦅', mpCost: 30 },
+  { key: 'transform', emoji: '🐍', mpCost: 20 },
 ];
 
 export default function BattlePage() {
+  const tr = useTranslations();
+  const t = tr.battle;
+  const COPING_TACTICS = COPING_TACTIC_KEYS.map((k, i) => ({
+    ...k,
+    label: t.copingTactics[i]?.label ?? k.key,
+    desc: t.copingTactics[i]?.desc ?? '',
+  }));
+
   const navigateTo = useGameStore((s) => s.navigateTo);
+  const worryType = useGameStore((s) => s.worryType);
   const heroData = useAdventureStore((s) => s.hero);
   const monsterData = useAdventureStore((s) => s.monster);
   const battleSkills = useAdventureStore((s) => s.battleSkills);
@@ -31,11 +43,14 @@ export default function BattlePage() {
   const consumeStamina = useAdventureStore((s) => s.consumeStamina);
   const updateHp = useAdventureStore((s) => s.updateHp);
   const updateMp = useAdventureStore((s) => s.updateMp);
+  const restoreHp = useAdventureStore((s) => s.restoreHp);
+  const restoreStamina = useAdventureStore((s) => s.restoreStamina);
   const addCoins = useAdventureStore((s) => s.addCoins);
   const addExp = useAdventureStore((s) => s.addExp);
 
   const victoryVideoUrl = useAdventureStore((s) => s.victoryVideoUrl);
   const victoryImageUrl = useAdventureStore((s) => s.victoryImageUrl);
+  const effectiveVideoUrl = victoryVideoUrl || VICTORY_VIDEO_MAP[worryType || ''] || '';
 
   const phase = useBattleStore((s) => s.phase);
   const heroActor = useBattleStore((s) => s.hero);
@@ -54,10 +69,12 @@ export default function BattlePage() {
   const availableSkills = useBattleStore((s) => s.availableSkills);
   const [selectedCoping, setSelectedCoping] = useState<string | null>(null);
   const [arenaMsg, setArenaMsg] = useState<{ hero?: string; monster?: string; heroDmg?: number; monsterDmg?: number }>({});
+  const [mpPopupOpen, setMpPopupOpen] = useState(false);
+  const [defeatPopupOpen, setDefeatPopupOpen] = useState(false);
   const initialized = useRef(false);
-  const prevHeroHp = useRef(heroActor.hp);
-  const prevMonsterHp = useRef(monsterActor.hp);
-  const prevHeroMp = useRef(heroActor.mp);
+  const prevHeroHp = useRef(adventureHp);
+  const prevMonsterHp = useRef(persistedMonsterHp ?? 100);
+  const prevHeroMp = useRef(adventureMp);
 
   const selectedSkill = availableSkills.find(s => s.id === selectedSkillId) ?? null;
 
@@ -105,6 +122,22 @@ export default function BattlePage() {
     playCollect();
   };
 
+  // Reset popup states on every mount, detect conditions to open them
+  useEffect(() => {
+    setMpPopupOpen(false);
+    setDefeatPopupOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (heroActor.mp === 0 && phase !== 'defeat' && phase !== 'victory') {
+      setMpPopupOpen(true);
+    }
+  }, [heroActor.mp, phase]);
+
+  useEffect(() => {
+    if (phase === 'defeat') setDefeatPopupOpen(true);
+  }, [phase]);
+
   // One-time stamina cost to enter battle
   useEffect(() => {
     if (initialized.current && phase === 'player-turn' && turn === 1) {
@@ -114,16 +147,16 @@ export default function BattlePage() {
 
   const handleExecute = () => {
     if (!selectedCoping) return;
-    const tactic = COPING_TACTICS.find(t => t.key === selectedCoping);
+    const tactic = COPING_TACTICS.find(ct => ct.key === selectedCoping);
     if (!tactic || heroActor.mp < tactic.mpCost) return;
     const skill = availableSkills.find(s => s.id === selectedSkillId);
-    setArenaMsg({ hero: skill?.name ?? '攻击', monsterDmg: undefined });
+    setArenaMsg({ hero: skill?.name ?? t.attackBtn, monsterDmg: undefined });
     executeTurn(tactic.mpCost);
     setSelectedCoping(null);
     playHurt();
   };
 
-  const tacticDesc = COPING_TACTICS.find(t => t.key === selectedCoping);
+  const tacticDesc = COPING_TACTICS.find(ct => ct.key === selectedCoping);
 
   return (
     <div className="space-y-4">
@@ -212,7 +245,7 @@ export default function BattlePage() {
               {phase === 'enemy-turn' && lastEnemyAction && (
                 <motion.span initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
                   className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/90 border-2 border-[#e05a5a]" style={{ color: '#e05a5a' }}>
-                  发起攻击
+                  {t.launchAttack}
                 </motion.span>
               )}
             </div>
@@ -221,7 +254,7 @@ export default function BattlePage() {
           {/* Coping Strategy Grid — only during player-turn, hide during animations */}
           {(phase === 'player-turn') && (
             <Card color="app-yellow">
-              <h4 className="text-xs font-extrabold mb-3 text-center" style={{ color: '#725d42' }}>🎯 选择应对策略 (体力 -10/回合)</h4>
+              <h4 className="text-xs font-extrabold mb-3 text-center" style={{ color: '#725d42' }}>{t.chooseStrategy}</h4>
               {!selectedCoping ? (
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {COPING_TACTICS.map((t) => (
@@ -247,14 +280,14 @@ export default function BattlePage() {
                     <p className="text-xs mt-2 font-bold" style={{ color: '#19c8b9' }}>
                       {tacticDesc?.label} · MP {tacticDesc?.mpCost} {selectedSkill ? `· ⚔️ ${selectedSkill.damage || '?'} 伤害` : `— ${tacticDesc?.desc}`}
                     </p>
-                    {heroActor.mp < (COPING_TACTICS.find(t=>t.key===selectedCoping)?.mpCost ?? 99) && (
-                      <p className="text-xs mt-1 font-bold animate-pulse" style={{ color: '#e05a5a' }}>⚠️ MP不足！去做任务恢复。</p>
+                    {heroActor.mp < (COPING_TACTICS.find(ct=>ct.key===selectedCoping)?.mpCost ?? 99) && (
+                      <p className="text-xs mt-1 font-bold animate-pulse" style={{ color: '#e05a5a' }}>{t.mpWarning}</p>
                     )}
                   </Card>
                   <div className="flex gap-2">
-                    <Button type="default" size="small" onClick={() => { setSelectedCoping(null); selectSkill(''); }}>重选</Button>
-                    <Button type="primary" size="large" block onClick={handleExecute} disabled={!selectedSkill || heroActor.mp < (COPING_TACTICS.find(t=>t.key===selectedCoping)?.mpCost ?? 99)}>
-                      <Sword size={14} className="inline mr-1" />执行战术 · 攻击心魔
+                    <Button type="default" size="small" onClick={() => { setSelectedCoping(null); selectSkill(''); }}>{t.reselect}</Button>
+                    <Button type="primary" size="large" block onClick={handleExecute} disabled={!selectedSkill || heroActor.mp < (COPING_TACTICS.find(ct=>ct.key===selectedCoping)?.mpCost ?? 99)}>
+                      <Sword size={14} className="inline mr-1" />{t.executeBtn}
                     </Button>
                   </div>
                 </div>
@@ -266,7 +299,7 @@ export default function BattlePage() {
         {/* Right: Battle Log (1 col) */}
         <div className="lg:col-span-1">
           <Card className="h-full max-h-[600px] overflow-hidden flex flex-col">
-            <h4 className="text-xs font-extrabold mb-2 shrink-0" style={{ color: '#9f927d' }}>📜 战斗记录</h4>
+            <h4 className="text-xs font-extrabold mb-2 shrink-0" style={{ color: '#9f927d' }}>{t.battleLog}</h4>
             <div className="flex-1 overflow-y-auto text-[10px] space-y-0.5 pr-1" style={{ color: '#725d42' }}>
               {log.map(e => (
                 <p key={e.id} className="leading-relaxed">
@@ -283,24 +316,26 @@ export default function BattlePage() {
 
       {/* Victory fullscreen overlay — upgrades from spinner → image → video as media arrives */}
       {phase === 'victory' && (() => {
-        const handleProceed = () => { addCoins(50); addExp(50); playResolve(); setMonsterHp(null); navigateTo('victory'); };
+        const handleProceed = () => { restoreHp(9999); updateMp(9999); restoreStamina(9999); addCoins(50); addExp(50); playResolve(); setMonsterHp(null); navigateTo('victory'); };
 
-        // Priority 1: video ready → fullscreen video
-        if (victoryVideoUrl) {
+        // Priority 1: video ready → fullscreen video (local fallback by category if AI url missing)
+        if (effectiveVideoUrl) {
           return (
             <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
               <video
-                src={victoryVideoUrl}
+                src={effectiveVideoUrl}
                 autoPlay
+                muted
                 playsInline
                 className="w-full h-full object-cover"
                 onEnded={handleProceed}
+                onError={handleProceed}
               />
               <button
                 onClick={handleProceed}
                 className="absolute bottom-8 right-8 px-6 py-3 rounded-full font-extrabold text-white border-2 border-white/40 bg-black/40 hover:bg-black/60 transition-all"
               >
-                跳过 →
+                {t.skipVideo}
               </button>
             </div>
           );
@@ -318,18 +353,18 @@ export default function BattlePage() {
                 >
                   🎊
                 </motion.div>
-                <h2 className="text-3xl font-extrabold text-white mb-1">净化成功！</h2>
-                <p className="text-white/60 text-sm mb-4">心魔已被感化</p>
+                <h2 className="text-3xl font-extrabold text-white mb-1">{t.purifySuccess}</h2>
+                <p className="text-white/60 text-sm mb-4">{t.purifySubtitle}</p>
                 <div className="rounded-3xl overflow-hidden border-4 border-white/20 mb-4">
-                  <img src={victoryImageUrl} alt="胜利场景" className="w-full h-auto" />
+                  <img src={victoryImageUrl} alt={t.purifyAlt} className="w-full h-auto" />
                 </div>
-                <p className="text-yellow-300 text-xs mb-5 animate-pulse">🎬 胜利动画生成中，稍候自动播放…</p>
+                <p className="text-yellow-300 text-xs mb-5 animate-pulse">{t.videoLoading}</p>
                 <button
                   onClick={handleProceed}
                   className="px-8 py-3 rounded-full font-extrabold text-white border-2 border-[#2E7D32]"
                   style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}
                 >
-                  🌈 前往丰收祭 (+50🪙 +50EXP)
+                  {t.victoryBtn}
                 </button>
               </div>
             </div>
@@ -347,54 +382,55 @@ export default function BattlePage() {
               >
                 🎊
               </motion.div>
-              <h2 className="text-3xl font-extrabold text-white mb-2">净化成功！</h2>
-              <p className="text-white/60 text-sm mb-6">心魔已被感化</p>
+              <h2 className="text-3xl font-extrabold text-white mb-2">{t.purifySuccess}</h2>
+              <p className="text-white/60 text-sm mb-6">{t.purifySubtitle}</p>
               <motion.p
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
                 className="text-yellow-300 text-sm mb-6"
               >
-                🎬 胜利动画生成中…
+                {t.videoLoadingShort}
               </motion.p>
               <button
                 onClick={handleProceed}
                 className="px-8 py-3 rounded-full font-extrabold text-white border-2 border-[#2E7D32]"
                 style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}
               >
-                🌈 前往丰收祭 (+50🪙 +50EXP)
+                {t.victoryBtn}
               </button>
             </div>
           </div>
         );
       })()}
-      {heroActor.mp === 0 && phase !== 'defeat' && phase !== 'victory' && (
-        <Modal open title="💙 能量耗尽…" typewriter={false} footer={null} onClose={() => {}}>
-          <div className="text-center py-4">
-            <p className="text-lg font-bold mb-4" style={{ color: '#2196F3' }}>应对能量不足了！</p>
-            <p className="text-sm mb-6" style={{ color: '#725d42' }}>做一件日常任务来恢复应对能量，再回来挑战吧！</p>
-            <Button type="primary" size="large" onClick={() => navigateTo('tasks')}>📋 去做任务</Button>
-          </div>
-        </Modal>
-      )}
-      {phase === 'defeat' && isFirstBattle && (
-        <Modal open title="💨 能量耗尽…" typewriter={false} footer={null} onClose={() => {}}>
-          <div className="text-center py-4"><p className="text-lg font-bold mb-4" style={{ color: '#e05a5a' }}>呼……心魔太强了！</p>
-            <p className="text-sm mb-4" style={{ color: '#725d42' }}>需要在岛上完成日常任务，积蓄能量后再来挑战。</p>
-            <p className="text-xs mb-6 font-bold" style={{ color: '#e05a5a' }}>别让自己太累了——保护能量，才能打败心魔。</p>
-            <Button type="primary" size="large" onClick={() => { resetBattle(); navigateTo('tasks'); }}>📋 去做日常任务</Button></div>
-        </Modal>
-      )}
-      {phase === 'defeat' && !isFirstBattle && (
-        <Modal open title="💔 战斗失败" typewriter={false} footer={null} onClose={() => {}}>
-          <div className="text-center py-4">
-            <p className="text-sm mb-4" style={{ color: '#725d42' }}>去静心营地恢复HP，或泡杯花茶再来！</p>
-            <p className="text-xs mb-6 font-bold" style={{ color: '#e05a5a' }}>别让自己太累了——保护能量，才能打败心魔。</p>
-            <div className="flex gap-3 justify-center">
-              <Button type="default" onClick={() => { resetBattle(); navigateTo('minigames'); }}>🏕️ 静心营地</Button>
-              <Button type="primary" onClick={() => { resetBattle(); navigateTo('teashop'); }}>🍵 花茶补给</Button></div>
-          </div>
-        </Modal>
-      )}
+      <Modal open={mpPopupOpen} title={t.mpModal.title} typewriter={false} footer={null} onClose={() => setMpPopupOpen(false)}>
+        <div className="text-center py-4">
+          <p className="text-lg font-bold mb-4" style={{ color: '#2196F3' }}>{t.mpModal.body1}</p>
+          <p className="text-sm mb-6" style={{ color: '#725d42' }}>{t.mpModal.body2}</p>
+          <Button type="primary" size="large" onClick={() => { setMpPopupOpen(false); resetBattle(); navigateTo('tasks'); }}>{t.mpModal.tasksBtn}</Button>
+        </div>
+      </Modal>
+      <Modal open={defeatPopupOpen} title={isFirstBattle ? t.defeatModal.title1 : t.defeatModal.title2} typewriter={false} footer={null} onClose={() => setDefeatPopupOpen(false)}>
+        <div className="text-center py-4">
+          {isFirstBattle ? (
+            <>
+              <p className="text-lg font-bold mb-4" style={{ color: '#e05a5a' }}>{t.defeatModal.body1}</p>
+              <p className="text-sm mb-4" style={{ color: '#725d42' }}>{t.defeatModal.body2}</p>
+              <p className="text-xs mb-6 font-bold" style={{ color: '#e05a5a' }}>{t.defeatModal.body3}</p>
+              <Button type="primary" size="large" onClick={() => { setDefeatPopupOpen(false); resetBattle(); navigateTo('tasks'); }}>{t.defeatModal.tasksBtn}</Button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm mb-4" style={{ color: '#725d42' }}>{t.defeatModal.campBody}</p>
+              <p className="text-xs mb-6 font-bold" style={{ color: '#e05a5a' }}>{t.defeatModal.body3}</p>
+              <div className="flex gap-3 justify-center">
+                <Button type="default" onClick={() => { setDefeatPopupOpen(false); resetBattle(); navigateTo('minigames'); }}>{t.defeatModal.campBtn}</Button>
+                <Button type="primary" onClick={() => { setDefeatPopupOpen(false); resetBattle(); navigateTo('teashop'); }}>{t.defeatModal.teaBtn}</Button>
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
+      <OnboardingTipManager triggerId="battle_intro" />
     </div>
   );
 }

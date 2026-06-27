@@ -10,6 +10,26 @@ import { generateVideo } from './agents/videoAgent';
 import type { TextContent } from './agents/textContentAgent';
 import type { GeneratedImages } from './agents/imageAgent';
 import type { GeneratedVideo } from './agents/videoAgent';
+import { GoogleAuth } from 'google-auth-library';
+
+const AGENT_RUNTIME_URL = process.env.AGENT_RUNTIME_URL || 'http://localhost:8000';
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  if (!AGENT_RUNTIME_URL.startsWith('https://')) {
+    return {};
+  }
+  try {
+    const auth = new GoogleAuth({
+      scopes: 'https://www.googleapis.com/auth/cloud-platform',
+    });
+    const client = await auth.getClient();
+    const headers = await client.getRequestHeaders();
+    return headers as Record<string, string>;
+  } catch (err) {
+    console.warn('[GoogleAuth] Could not fetch OAuth headers, proceeding without auth:', err);
+    return {};
+  }
+}
 
 export interface JobStatus {
   taskId: string;
@@ -46,6 +66,7 @@ class JobQueueManager {
     deepseekKey: string,
     geminiKey: string,
     supabaseToken?: string,
+    language = 'zh',
   ): Promise<JobStatus> {
     const job: JobStatus = {
       taskId,
@@ -58,7 +79,7 @@ class JobQueueManager {
     this.jobs.set(taskId, job);
 
     // Start async pipeline (battle-blocking stages only)
-    void this.runPipeline(taskId, worryText, worryType, deepseekKey, geminiKey, supabaseToken);
+    void this.runPipeline(taskId, worryText, worryType, deepseekKey, geminiKey, supabaseToken, language);
 
     return job;
   }
@@ -70,6 +91,7 @@ class JobQueueManager {
     deepseekKey: string,
     geminiKey: string,
     supabaseToken?: string,
+    language = 'zh',
   ) {
     try {
       const job = this.jobs.get(taskId);
@@ -79,57 +101,179 @@ class JobQueueManager {
       job.status = 'text';
       job.updatedAt = Date.now();
 
-      const agnesCfg = {
-        agnesKey: process.env.AGNES_API_KEY,
-        agnesBaseUrl: process.env.AGNES_BASE_URL,
-        agnesTextModel: process.env.AGNES_TEXT_MODEL,
-        agnesImageModel: process.env.AGNES_IMAGE_MODEL,
-      };
-
-      let textContent: TextContent;
+      // Try ADK Agent Runtime (Vertex AI Reasoning Engine / Local FastAPI dev) first
+      let adkSuccess = false;
       try {
-        textContent = await Promise.race([
-          generateTextContent(worryText, worryType, deepseekKey, agnesCfg),
-          this.timeoutPromise(this.TEXT_TIMEOUT_MS, 'text'),
-        ]);
-      } catch {
-        console.warn(`[jobQueue] Text generation timed out or failed for ${taskId}, using fallback`);
-        return this.setFallback(taskId, worryType);
+        console.log(`[jobQueue] Contacting ADK Agent Runtime for task ${taskId}...`);
+        
+        // 1. Create a session
+        const sessionUrl = `${AGENT_RUNTIME_URL}/apps/game_agents/users/game-user/sessions/${taskId}`;
+        const authHeaders = await getAuthHeaders();
+        const sessionRes = await fetch(sessionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...authHeaders,
+          },
+          body: JSON.stringify({}),
+        });
+
+        if (!sessionRes.ok) {
+          throw new Error(`Failed to create ADK session: ${sessionRes.statusText}`);
+        }
+        console.log(`[jobQueue] ADK session created successfully: ${taskId}`);
+
+        // 2. Initial Run agent
+        const runUrl = `${AGENT_RUNTIME_URL}/run`;
+        const runPayload = {
+          appName: 'game_agents',
+          userId: 'game-user',
+          sessionId: taskId,
+          newMessage: {
+            role: 'user',
+            parts: [
+              {
+                text: JSON.stringify({
+                  worry_text: worryText,
+                  worry_type: worryType,
+                  language: language,
+                }),
+              },
+            ],
+          },
+        };
+
+        const runRes = await fetch(runUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...authHeaders,
+          },
+          body: JSON.stringify(runPayload),
+        });
+
+        if (!runRes.ok) {
+          throw new Error(`ADK run failed: ${runRes.statusText}`);
+        }
+
+        const events = await runRes.json() as any[];
+        console.log(`[jobQueue] Received ${events.length} events from initial ADK run`);
+
+        // Extract consolidated state from ADK events
+        let state: Record<string, any> = {};
+        for (const event of events) {
+          const stateDelta = event.actions?.stateDelta || event.stateDelta;
+          if (stateDelta) {
+            state = { ...state, ...stateDelta };
+          }
+        }
+
+        // Validate that we have the necessary fields
+        if (state.heroName && state.monsterName) {
+          console.log(`[jobQueue] ADK agent execution successful. Integrating data for ${taskId}`);
+
+          const textContent: TextContent = {
+            heroName: state.heroName,
+            heroStory: state.heroStory || '',
+            heroSkills: state.heroSkills || [],
+            monsterName: state.monsterName,
+            monsterStory: state.monsterStory || '',
+            monsterAttacks: state.monsterAttacks || [],
+            cbtAnalysis: state.cbtAnalysis || '',
+            victoryText: state.victoryText || '',
+            imagePromptHero: state.imagePromptHero || '',
+            imagePromptMonster: state.imagePromptMonster || '',
+            animationPrompt: state.animationPrompt || '',
+            victoryImagePrompt: state.victoryImagePrompt || '',
+            // Map quests array returned from quest_gen_node back to dailyTasks
+            dailyTasks: state.quests?.tasks || state.dailyTasks || [],
+          };
+
+          const images: GeneratedImages = {
+            heroUrl: state.heroUrl || '/hero-monster/panda.png',
+            monsterUrl: state.monsterUrl || '/hero-monster/woodpecker.png',
+          };
+
+          job.textContent = textContent;
+          job.progress = 40;
+          job.updatedAt = Date.now();
+
+          job.status = 'image';
+          job.updatedAt = Date.now();
+
+          job.images = images;
+          job.progress = 100;
+          job.status = 'image_complete'; // Battle is now unblocked
+          job.updatedAt = Date.now();
+
+          adkSuccess = true;
+
+          // Asynchronously trigger ADK background media resumption
+          void this.runBackgroundMediaADK(taskId, authHeaders, worryType);
+        } else {
+          throw new Error('ADK run response did not contain required hero/monster data');
+        }
+
+      } catch (adkErr) {
+        console.warn(`[jobQueue] ADK Agent Pipeline failed, falling back to original agents:`, adkErr);
       }
 
-      job.textContent = textContent;
-      job.progress = 40;
-      job.updatedAt = Date.now();
+      // If ADK failed or wasn't used, run original pipeline
+      if (!adkSuccess) {
+        console.log(`[jobQueue] Executing original local TS agents pipeline as fallback for ${taskId}...`);
+        
+        const agnesCfg = {
+          agnesKey: process.env.AGNES_API_KEY,
+          agnesBaseUrl: process.env.AGNES_BASE_URL,
+          agnesTextModel: process.env.AGNES_TEXT_MODEL,
+          agnesImageModel: process.env.AGNES_IMAGE_MODEL,
+        };
 
-      // Stage 2: Image generation (→ 100%, battle ready)
-      job.status = 'image';
-      job.updatedAt = Date.now();
+        let textContent: TextContent;
+        try {
+          textContent = await Promise.race([
+            generateTextContent(worryText, worryType, deepseekKey, agnesCfg, language),
+            this.timeoutPromise(this.TEXT_TIMEOUT_MS, 'text'),
+          ]);
+        } catch {
+          console.warn(`[jobQueue] Text generation timed out or failed for ${taskId}, using fallback`);
+          return this.setFallback(taskId, worryType);
+        }
 
-      let images: GeneratedImages;
-      try {
-        images = await Promise.race([
-          generateImages(
-            textContent.imagePromptHero,
-            textContent.imagePromptMonster,
-            worryType,
-            geminiKey,
-            supabaseToken,
-            agnesCfg,
-          ),
-          this.timeoutPromise(this.IMAGE_TIMEOUT_MS, 'image'),
-        ]);
-      } catch {
-        console.warn(`[jobQueue] Image generation timed out or failed for ${taskId}, using fallback`);
-        return this.setFallback(taskId, worryType);
+        job.textContent = textContent;
+        job.progress = 40;
+        job.updatedAt = Date.now();
+
+        // Stage 2: Image generation (→ 100%, battle ready)
+        job.status = 'image';
+        job.updatedAt = Date.now();
+
+        let images: GeneratedImages;
+        try {
+          images = await Promise.race([
+            generateImages(
+              textContent.imagePromptHero,
+              textContent.imagePromptMonster,
+              worryType,
+              geminiKey,
+              supabaseToken,
+              agnesCfg,
+            ),
+            this.timeoutPromise(this.IMAGE_TIMEOUT_MS, 'image'),
+          ]);
+        } catch {
+          console.warn(`[jobQueue] Image generation timed out or failed for ${taskId}, using fallback`);
+          return this.setFallback(taskId, worryType);
+        }
+
+        job.images = images;
+        job.progress = 100;
+        job.status = 'image_complete'; // ← Battle is now unblocked
+        job.updatedAt = Date.now();
+
+        // Fire original background media pipeline (non-blocking)
+        void this.runBackgroundMedia(taskId, textContent, images, worryType, geminiKey, supabaseToken, agnesCfg);
       }
-
-      job.images = images;
-      job.progress = 100;
-      job.status = 'image_complete'; // ← Battle is now unblocked
-      job.updatedAt = Date.now();
-
-      // Fire background media pipeline (non-blocking — battle starts now)
-      void this.runBackgroundMedia(taskId, textContent, images, worryType, geminiKey, supabaseToken, agnesCfg);
 
     } catch (error) {
       console.error(`[jobQueue] Pipeline error for ${taskId}:`, error);
@@ -138,6 +282,97 @@ class JobQueueManager {
         job.error = error instanceof Error ? error.message : 'Unknown error';
         job.status = 'error';
         job.updatedAt = Date.now();
+      }
+    }
+  }
+
+  private async runBackgroundMediaADK(taskId: string, authHeaders: Record<string, string>, worryType: string) {
+    const job = this.jobs.get(taskId);
+    if (!job) return;
+
+    try {
+      console.log(`[jobQueue] Resuming ADK workflow for background media generation on ${taskId}...`);
+      
+      const resumeUrl = `${AGENT_RUNTIME_URL}/run`;
+      const resumePayload = {
+        appName: 'game_agents',
+        userId: 'game-user',
+        sessionId: taskId,
+        newMessage: {
+          role: 'user',
+          parts: [
+            {
+              functionResponse: {
+                id: 'battle_won',
+                name: 'adk_request_input',
+                response: {
+                  output: true,
+                },
+              },
+            },
+          ],
+        },
+      };
+
+      const resumeRes = await fetch(resumeUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders,
+        },
+        body: JSON.stringify(resumePayload),
+      });
+
+      if (!resumeRes.ok) {
+        throw new Error(`ADK resumption failed: ${resumeRes.statusText}`);
+      }
+
+      const events = await resumeRes.json() as any[];
+      console.log(`[jobQueue] Received ${events.length} events from resumed ADK run`);
+
+      let state: Record<string, any> = {};
+      for (const event of events) {
+        const stateDelta = event.actions?.stateDelta || event.stateDelta;
+        if (stateDelta) {
+          state = { ...state, ...stateDelta };
+        }
+      }
+
+      if (state.victoryImageUrl) {
+        job.victoryImageUrl = state.victoryImageUrl;
+        job.status = 'victory_image_ready';
+        job.updatedAt = Date.now();
+        console.log(`[jobQueue] ADK victory image ready: ${state.victoryImageUrl}`);
+      } else {
+        console.warn(`[jobQueue] ADK resumption didn't yield victoryImageUrl`);
+      }
+
+      if (state.videoUrl !== undefined) {
+        job.video = {
+          videoUrl: state.videoUrl || '',
+          status: state.videoUrl ? 'success' : 'fallback',
+          message: state.videoUrl ? undefined : 'Video generation unavailable',
+        };
+        job.status = 'video_complete';
+        job.updatedAt = Date.now();
+        console.log(`[jobQueue] ADK victory video ready: ${state.videoUrl}`);
+      } else {
+        console.warn(`[jobQueue] ADK resumption didn't yield videoUrl`);
+      }
+
+    } catch (err) {
+      console.error(`[jobQueue] ADK background media generation failed for ${taskId}:`, err);
+      // Fall back to original local background media generation
+      if (job.textContent && job.images) {
+        console.log(`[jobQueue] Falling back to original background media generation for ${taskId}...`);
+        const agnesCfg = {
+          agnesKey: process.env.AGNES_API_KEY,
+          agnesBaseUrl: process.env.AGNES_BASE_URL,
+          agnesImageModel: process.env.AGNES_IMAGE_MODEL,
+        };
+        const geminiKey = process.env.GEMINI_API_KEY || '';
+        const supabaseToken = process.env.SUPABASE_TOKEN;
+        void this.runBackgroundMedia(taskId, job.textContent, job.images, worryType, geminiKey, supabaseToken, agnesCfg);
       }
     }
   }

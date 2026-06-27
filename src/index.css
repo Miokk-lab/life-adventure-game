@@ -146,22 +146,41 @@ html, body, #root {
   max-width: 320px !important;
 }
 
-/* Voyage loading: CSS fallback for GSAP island animation */
+/* Voyage loading: time-based CSS animation, decoupled from loading progress */
+/* overflow:visible prevents SVG from clipping the canopy during rotation */
+.voyage-loading svg {
+  overflow: visible !important;
+}
 .voyage-loading svg #whole-island {
-  animation: islandBob 2s ease-in-out infinite;
+  animation: islandBob 3.3s ease-in-out infinite alternate;
   transform-box: fill-box;
   transform-origin: bottom center;
 }
 .voyage-loading svg #tree {
-  animation: treeSway 2s ease-in-out infinite;
+  animation: treeSway 3.3s ease-in-out infinite alternate;
   transform-box: fill-box;
   transform-origin: bottom center;
 }
+/* Broad fallback: covers alternate SVG structures across library versions */
+.voyage-loading svg > g:first-child {
+  animation: islandBob 3.3s ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+.voyage-loading svg > g:last-child {
+  animation: treeSway 4s ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+/* Ensure animation always runs, never paused */
+.voyage-loading * {
+  animation-play-state: running !important;
+}
 @keyframes islandBob {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(1deg); }
+  from { transform: translateY(0) rotate(0deg); }
+  to { transform: translateY(-10px) rotate(1deg); }
 }
 @keyframes treeSway {
-  0%, 100% { transform: rotate(-5deg); }
-  50% { transform: rotate(4deg); }
+  from { transform: rotate(-4deg); }
+  to { transform: rotate(4deg); }
 }

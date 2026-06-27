@@ -1,10 +1,14 @@
 import 'dotenv/config';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 fs.mkdirSync('/tmp/claude-generated-images', { recursive: true });
 
 import express from 'express';
 import type { Request, Response } from 'express';
 import { jobQueue, getOfflinePreset } from './jobQueue';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -33,7 +37,7 @@ app.get('/api/health', (_req, res) => {
 
 // ── AI Adventure Creation (triggers pipeline) ──
 app.post('/api/adventure/create', async (req: Request, res: Response) => {
-  const { worryText, worryType } = req.body;
+  const { worryText, worryType, language = 'zh' } = req.body;
 
   if (!worryText || !worryType) {
     res.status(400).json({ error: 'Missing worryText or worryType' });
@@ -52,7 +56,7 @@ app.post('/api/adventure/create', async (req: Request, res: Response) => {
     const taskId = `task_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
     // Create job and start async pipeline
-    const job = await jobQueue.createJob(taskId, worryText, worryType, deepseekKey, geminiKey, supabaseToken);
+    const job = await jobQueue.createJob(taskId, worryText, worryType, deepseekKey, geminiKey, supabaseToken, language);
 
     res.json({
       task_id: taskId,
@@ -210,6 +214,13 @@ app.post('/api/save', (req: Request, res: Response) => {
 app.get('/api/load/:userId', (_req: Request, res: Response) => {
   res.json({ data: null, message: 'No cloud save found' });
 });
+
+// ── Serve built React frontend in production ──
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, '../dist');
+  app.use(express.static(distPath));
+  app.get('*all', (_req, res) => res.sendFile(path.join(distPath, 'index.html')));
+}
 
 // ── Start server ──
 if (process.env.NODE_ENV !== 'test') {

@@ -2,20 +2,29 @@ import { useGameStore } from '../../stores/useGameStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
 import { Button, Card, Title } from 'animal-island-ui';
 import { motion } from 'motion/react';
+import { useTranslations } from '../../i18n';
+
+function extractNickname(name: string | null | undefined, fallback: string): string {
+  if (!name) return fallback;
+  return name.match(/「(.+?)」/)?.[1] ?? name;
+}
 
 export default function AnalysisPage() {
   const navigateTo = useGameStore((s) => s.navigateTo);
   const hero = useAdventureStore((s) => s.hero);
   const monster = useAdventureStore((s) => s.monster);
   const cbtAnalysis = useAdventureStore((s) => s.cbtAnalysis);
+  const t = useTranslations().analysis;
+  const monsterNickname = extractNickname(monster?.name, t.unknownMonster);
+  const heroNickname = extractNickname(hero?.name, t.unknownHero);
 
   return (
     <div className="min-h-screen px-4 py-6" style={{ background: '#F8F5EB' }}>
       <div className="max-w-5xl mx-auto">
         {/* Narrative Typewriter */}
         <div className="text-center mb-8">
-          <Title size="large" color="app-blue">岛屿心理诊所</Title>
-          <p className="text-sm mt-2 mb-6" style={{ color: '#A08E75' }}>让我们一起来看看，你的烦恼背后藏着什么样的故事…</p>
+          <Title size="large" color="app-blue">{t.clinicTitle}</Title>
+          <p className="text-sm mt-2 mb-6" style={{ color: '#A08E75' }}>{t.clinicSubtitle}</p>
         </div>
 
         {/* Bento Grid — 3 columns (ver4 RevealScreen pattern) */}
@@ -29,12 +38,12 @@ export default function AnalysisPage() {
           >
             <Card className="h-full rounded-[32px] p-5 shadow-[0_8px_0_0_#C4B89E] border-4 border-[#725D42]">
               <div className="text-center">
-                <span className="text-red-500 text-sm font-black">💀 待平复的焦虑伙伴</span>
+                <span className="text-red-500 text-sm font-black">{t.monsterLabel}</span>
                 <h3 className="text-lg font-extrabold mt-1" style={{ color: '#C62828' }}>
-                  {monster?.name ?? '未知心魔'}
+                  {monsterNickname}
                 </h3>
                 <span className="text-[10px] px-2 py-0.5 rounded-full border-2 border-[#725D42] bg-[#FFEAEA]"
-                  style={{ color: '#C62828' }}>心魔</span>
+                  style={{ color: '#C62828' }}>{t.monsterTag}</span>
               </div>
               <div className="flex justify-center my-4">
                 <div className="w-32 h-32 rounded-full border-4 border-[#725D42] bg-[#F2EDE0] flex items-center justify-center overflow-hidden">
@@ -43,20 +52,20 @@ export default function AnalysisPage() {
               </div>
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
                 <div className="p-2 rounded-xl border-2 border-dashed border-[#C4B89E]">
-                  <p className="text-[10px] font-black" style={{ color: '#A08E75' }}>攻击习性</p>
-                  {(monster?.attacks ?? ['未知攻击模式']).map((a, i) => (
+                  <p className="text-[10px] font-black" style={{ color: '#A08E75' }}>{t.attackHabits}</p>
+                  {(monster?.attacks ?? [t.unknownAttack]).map((a, i) => (
                     <p key={i} className="text-xs mt-0.5 break-words" style={{ color: '#725d42' }}>• {a}</p>
                   ))}
                 </div>
                 <div className="p-2 rounded-xl bg-[#E8F5E9]">
-                  <p className="text-[10px] font-black" style={{ color: '#3A8D63' }}>弱点</p>
+                  <p className="text-[10px] font-black" style={{ color: '#3A8D63' }}>{t.weakness}</p>
                   <p className="text-xs font-bold break-words" style={{ color: '#2E7D32' }}>
-                    {monster?.story ?? '探索中…'}
+                    {monster?.story ?? t.unknownStory}
                   </p>
                 </div>
               </div>
               <p className="text-[9px] text-center mt-3 italic" style={{ color: '#A08E75' }}>
-                每个心魔背后都藏着珍贵的品质
+                {t.monsterQuote}
               </p>
             </Card>
           </motion.div>
@@ -70,15 +79,15 @@ export default function AnalysisPage() {
           >
             <Card className="h-full rounded-[32px] p-5 shadow-[0_8px_0_0_#C4B89E] border-4 border-[#725D42]">
               <div className="text-center mb-4">
-                <span className="text-[10px] font-black" style={{ color: '#A08E75' }}>📋 心理诊断卡</span>
-                <h3 className="text-base font-extrabold mt-1" style={{ color: '#5D4037' }}>CBT一体两面分析</h3>
+                <span className="text-[10px] font-black" style={{ color: '#A08E75' }}>{t.diagnosisCard}</span>
+                <h3 className="text-base font-extrabold mt-1" style={{ color: '#5D4037' }}>{t.analysisTitle}</h3>
               </div>
               <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
                 {cbtAnalysis ? (() => {
                   const SECTION_STYLES = [
-                    { bg: '#E8F5E9', border: '#4CAF50', headingColor: '#2E7D32', icon: '✨', label: '看见力量' },
-                    { bg: '#FFF8E1', border: '#FF9800', headingColor: '#E65100', icon: '🔍', label: '识别陷阱' },
-                    { bg: '#E3F2FD', border: '#2196F3', headingColor: '#1565C0', icon: '🌱', label: '小步行动' },
+                    { bg: '#E8F5E9', border: '#4CAF50', headingColor: '#2E7D32', icon: '✨', label: t.cbtSections[0] },
+                    { bg: '#FFF8E1', border: '#FF9800', headingColor: '#E65100', icon: '🔍', label: t.cbtSections[1] },
+                    { bg: '#E3F2FD', border: '#2196F3', headingColor: '#1565C0', icon: '🌱', label: t.cbtSections[2] },
                   ];
                   const sections = cbtAnalysis.split('\n\n').filter(Boolean).slice(0, 3);
                   return sections.map((para, i) => {
@@ -132,12 +141,12 @@ export default function AnalysisPage() {
                   });
                 })() : (
                   <div className="p-3 text-center text-xs" style={{ color: '#9F927D' }}>
-                    心理分析生成中…
+                    {t.loadingAnalysis}
                   </div>
                 )}
               </div>
               <div className="text-center mt-3 pt-3 border-t border-[#FAF7EC]">
-                <p className="text-[9px] italic" style={{ color: '#A08E75' }}>烦恼一体两面 · 正向品质探寻</p>
+                <p className="text-[9px] italic" style={{ color: '#A08E75' }}>{t.analysisFooter}</p>
               </div>
             </Card>
           </motion.div>
@@ -151,13 +160,13 @@ export default function AnalysisPage() {
           >
             <Card className="h-full rounded-[32px] p-5 shadow-[0_8px_0_0_#C4B89E] border-4 border-[#725D42]">
               <div className="text-center">
-                <span className="text-[10px] font-black" style={{ color: '#A08E75' }}>🛡️ 温暖岛屿神气村民</span>
+                <span className="text-[10px] font-black" style={{ color: '#A08E75' }}>{t.heroLabel}</span>
                 <h3 className="text-lg font-extrabold mt-1" style={{ color: '#1565C0' }}>
-                  {hero?.name ?? '未知英雄'}
+                  {heroNickname}
                 </h3>
                 <span className="text-[10px] px-2 py-0.5 rounded-full border-2 border-[#725D42] bg-[#E3F2FD]"
                   style={{ color: '#1565C0' }}>
-                  Lv.1 守护者
+                  {t.heroTag}
                 </span>
               </div>
               <div className="flex justify-center my-4">
@@ -175,19 +184,19 @@ export default function AnalysisPage() {
                   ))}
                 </div>
                 <div className="p-2 rounded-xl bg-[#E8F5E9]">
-                  <p className="text-[10px] font-black" style={{ color: '#3A8D63' }}>特殊能力</p>
+                  <p className="text-[10px] font-black" style={{ color: '#3A8D63' }}>{t.specialAbility}</p>
                   <p className="text-xs font-bold" style={{ color: '#2E7D32' }}>
-                    {hero?.story?.slice(0, 80) ?? '未知'}
+                    {hero?.story?.slice(0, 80) ?? t.unknownStory}
                   </p>
                 </div>
                 <div className="p-2 rounded-xl border-2 border-dashed border-[#C4B89E]">
                   <p className="text-xs italic text-center" style={{ color: '#5D4037' }}>
-                    "{hero?.skills?.[0]?.description ?? '勇敢面对内心的阴影'}"
+                    "{hero?.skills?.[0]?.description ?? t.unknownSkill}"
                   </p>
                 </div>
               </div>
               <p className="text-[9px] text-center mt-3 italic" style={{ color: '#A08E75' }}>
-                每个英雄都曾面对过自己的心魔
+                {t.heroQuote}
               </p>
             </Card>
           </motion.div>
@@ -201,7 +210,7 @@ export default function AnalysisPage() {
           transition={{ delay: 0.8 }}
         >
           <Button type="primary" size="large" onClick={() => navigateTo('gamescreen')}>
-            ✨ 正式开启心灵大扫除！
+            {t.startBtn}
           </Button>
         </motion.div>
       </div>

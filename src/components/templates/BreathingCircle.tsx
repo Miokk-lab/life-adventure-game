@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Modal } from 'animal-island-ui';
 import { motion } from 'motion/react';
 import { playCollect, playResolve } from '../../systems/soundEngine';
+import { useTranslations } from '../../i18n';
 
 interface Props { title: string; description: string; themeText: string; onComplete: () => void; onClose: () => void; }
 
@@ -35,7 +36,9 @@ export default function BreathingCircle({ title, description, themeText, onCompl
 
   const scale = phase === 'inhale' ? 1.5 : phase === 'hold' ? 1.5 : phase === 'exhale' ? 1.0 : 1.0;
   const color = phase === 'inhale' ? '#19C8B9' : phase === 'hold' ? '#8CC63F' : phase === 'exhale' ? '#FF9F1C' : '#c4b89e';
-  const labels: Record<string, string> = { inhale: '🌬️ 吸气', hold: '🧘 屏气', exhale: '🍃 呼气', rest: '☁️ 休息' };
+  const tr = useTranslations().templates;
+  const [inhale, hold, exhale, rest] = tr.breathingPhases as unknown as string[];
+  const labels: Record<string, string> = { inhale, hold, exhale, rest };
 
   return (
     <Modal open title={`🍃 ${title}`} footer={null} typewriter={false} onClose={onClose} width={480}>
@@ -56,9 +59,9 @@ export default function BreathingCircle({ title, description, themeText, onCompl
         ) : (
           <div className="text-center">
             <p className="text-2xl mb-2">🎁</p>
-            <p className="text-lg font-extrabold" style={{ color: '#6fba2c' }}>深呼吸完成！</p>
+            <p className="text-lg font-extrabold" style={{ color: '#6fba2c' }}>{tr.breathingDone}</p>
             <button onClick={onComplete} className="mt-4 px-6 py-3 rounded-full text-white font-extrabold border-2 border-[#2E7D32]"
-              style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}>领取奖励 ✨</button>
+              style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}>{tr.rewardBtn}</button>
           </div>
         )}
       </div>

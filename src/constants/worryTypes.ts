@@ -36,7 +36,7 @@ export const worryTypeList: WorryTypeInfo[] = [
     color: '#f8a6b2',
     stampLabel: '社交荆棘',
     heroPreview: '暖心卡皮巴拉「橘橘」',
-    monsterPreview: '敏感豪猪「刺刺魔」',
+    monsterPreview: '敏感刺猬「刺刺魔」',
   },
   {
     key: 'family_origin',

@@ -45,7 +45,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     set({
       phase: 'player-turn',
       turn: 1,
-      isFirstBattle: true,
+      isFirstBattle: get().isFirstBattle,
       hero: { name: heroName, hp: heroHp ?? INITIAL_HP, maxHp: INITIAL_HP, mp: heroMp ?? INITIAL_MP, maxMp: INITIAL_MP, imageUrl: heroImg },
       monster: { name: monsterName, hp: monsterMaxHp, maxHp: monsterMaxHp, mp: 100, maxMp: 100, imageUrl: monsterImg },
       availableSkills: skills,
@@ -158,5 +158,5 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     const s = get();
     set({ hero: { ...s.hero, hp: 0, mp: 0 }, phase: 'defeat', log: addLog(s.log, '💨 能量耗尽…需要在岛上积蓄力量再战！', 'narrative') });
   },
-  resetBattle: () => { logId = 0; set({ phase: 'intro', turn: 0, log: [], selectedSkillId: null, lastHeroAction: null, lastEnemyAction: null }); },
+  resetBattle: () => { logId = 0; set({ phase: 'intro', turn: 0, log: [], selectedSkillId: null, lastHeroAction: null, lastEnemyAction: null, isFirstBattle: false }); },
 }));

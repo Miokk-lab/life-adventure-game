@@ -2,6 +2,7 @@ import { useGameStore } from '../../stores/useGameStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
 import { Button, Card, Tabs, Title, Divider, Footer } from 'animal-island-ui';
 import { motion } from 'motion/react';
+import { useTranslations } from '../../i18n';
 
 export default function VictoryPage() {
   const navigateTo = useGameStore((s) => s.navigateTo);
@@ -13,12 +14,14 @@ export default function VictoryPage() {
   const exp = useAdventureStore((s) => s.exp);
   const reset = useAdventureStore((s) => s.reset);
 
+  const t = useTranslations().victory;
+
   const handleNewAdventure = () => { reset(); navigateTo('login'); };
 
   const tabItems = [
     {
       key: 'heroes',
-      label: '🦸 英雄',
+      label: t.heroTab,
       children: (
         <div className="p-4">
           {hero ? (
@@ -31,13 +34,13 @@ export default function VictoryPage() {
                 </div>
               </div>
             </Card>
-          ) : <p className="text-sm text-center py-8" style={{ color: '#c4b89e' }}>还没有解锁的英雄。</p>}
+          ) : <p className="text-sm text-center py-8" style={{ color: '#c4b89e' }}>{t.noHero}</p>}
         </div>
       ),
     },
     {
       key: 'monsters',
-      label: '👾 心魔',
+      label: t.monsterTab,
       children: (
         <div className="p-4">
           {monster ? (
@@ -50,14 +53,14 @@ export default function VictoryPage() {
                 </div>
               </div>
             </Card>
-          ) : <p className="text-sm text-center py-8" style={{ color: '#c4b89e' }}>还没有被净化的心魔。</p>}
+          ) : <p className="text-sm text-center py-8" style={{ color: '#c4b89e' }}>{t.noMonster}</p>}
         </div>
       ),
     },
     {
       key: 'letters',
-      label: '💌 信件',
-      children: <div className="p-4"><p className="text-sm text-center py-8" style={{ color: '#c4b89e' }}>信件存档功能即将开放…</p></div>,
+      label: t.letterTab,
+      children: <div className="p-4"><p className="text-sm text-center py-8" style={{ color: '#c4b89e' }}>{t.letterComingSoon}</p></div>,
     },
   ];
 
@@ -70,9 +73,9 @@ export default function VictoryPage() {
           style={{ background: 'linear-gradient(180deg, #ff0000, #ff7700, #ffff00, #00ff00, #0077ff, #4b0082, #8b00ff)', borderRadius: '0 0 50% 50%' }} />
         <div className="relative z-10">
           <motion.div className="text-6xl mb-4" animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity }}>🌈</motion.div>
-          <Title size="large" color="app-yellow">丰收祭：彩虹奇迹广场</Title>
+          <Title size="large" color="app-yellow">{t.pageTitle}</Title>
           <p className="text-sm mt-4 leading-relaxed" style={{ color: '#725d42' }}>
-            阳光洒满全岛，巨大彩虹横跨，花瓣漫天飞舞。你成功面对了自己的烦恼。
+            {t.pageSubtitle}
           </p>
           <div className="flex justify-center gap-6 mt-4 text-sm font-bold" style={{ color: '#725d42' }}>
             <span>⭐ Lv.{chapter}</span>
@@ -96,7 +99,7 @@ export default function VictoryPage() {
               />
             </div>
             <p className="text-center text-xs mt-3 italic" style={{ color: '#A08E75' }}>
-              🎬 心魔净化动画 · 心灵的治愈时刻
+              {t.purifyVideo}
             </p>
           </Card>
         </motion.div>
@@ -105,7 +108,7 @@ export default function VictoryPage() {
       {victoryText && (
         <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="mb-8">
           <Card color="app-yellow" pattern="app-teal">
-            <Title size="middle" color="brown">📖 哲理升华</Title>
+            <Title size="middle" color="brown">{t.wisdomTitle}</Title>
             <div className="mt-4 text-sm leading-relaxed max-h-[200px] overflow-y-auto break-words" style={{ color: '#725d42' }}>{victoryText}</div>
           </Card>
         </motion.div>
@@ -114,18 +117,18 @@ export default function VictoryPage() {
       <Divider type="wave-yellow" />
 
       <motion.div className="mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}>
-        <Title size="middle" color="app-blue">📚 岛屿图鉴</Title>
+        <Title size="middle" color="app-blue">{t.compendiumTitle}</Title>
         <Card className="mt-4"><Tabs items={tabItems} defaultActiveKey="heroes" leafAnimation /></Card>
       </motion.div>
 
       <motion.div className="text-center mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3 }}>
         <div className="flex gap-3 justify-center flex-wrap">
-          <Button type="primary" size="large" onClick={handleNewAdventure}>🆕 开启新冒险</Button>
-          <Button type="default" size="large" onClick={() => navigateTo('login')}>🏠 返回首页</Button>
+          <Button type="primary" size="large" onClick={handleNewAdventure}>{t.newAdventureBtn}</Button>
+          <Button type="default" size="large" onClick={() => navigateTo('login')}>{t.homeBtn}</Button>
         </div>
       </motion.div>
 
-      <Footer type="sea" />
+      <Footer type="sea" seamless />
     </div>
   );
 }

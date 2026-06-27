@@ -1,4 +1,5 @@
 import type { WorryCategory, DailyTask } from '../types';
+import { getWorryI18n } from './worryContentI18n';
 
 export interface SortGameData { baskets: { key: string; label: string; emoji: string }[]; items: { text: string; basket: string }[]; }
 export interface MiniGameDef { id: string; name: string; emoji: string; description: string; template?: string; sortData?: SortGameData; }
@@ -175,6 +176,26 @@ const CONTENT: Record<WorryCategory, WorryGameContent> = {
   },
 };
 
-export function getWorryContent(type: WorryCategory): WorryGameContent {
-  return CONTENT[type] ?? CONTENT.emotion_management;
+export function getWorryContent(type: WorryCategory, language = 'zh'): WorryGameContent {
+  const base = CONTENT[type] ?? CONTENT.emotion_management;
+  const i18n = language !== 'zh' ? getWorryI18n(type, language) : null;
+  if (!i18n) return base;
+
+  return {
+    ...base,
+    miniGames: base.miniGames.map((g, i) => ({
+      ...g,
+      name: i18n.miniGames[i]?.name ?? g.name,
+      description: i18n.miniGames[i]?.description ?? g.description,
+    })),
+    teas: base.teas.map((t, i) => ({
+      ...t,
+      name: i18n.teas[i]?.name ?? t.name,
+      desc: i18n.teas[i]?.desc ?? t.desc,
+    })),
+    tasks: base.tasks.map((task) => ({
+      ...task,
+      descriptions: i18n.taskDescriptions[task.type] ?? task.descriptions,
+    })),
+  };
 }

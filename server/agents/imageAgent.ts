@@ -22,7 +22,7 @@ export interface AgnesImageConfig {
 }
 
 const WORRY_IMAGES: Record<string, { hero: string; monster: string }> = {
-  work_stress:        { hero: '/hero-monster/panda.png',    monster: '/hero-monster/hamster.png' },
+  work_stress:        { hero: '/hero-monster/panda.png',    monster: '/hero-monster/woodpecker.png' },
   learning_growth:    { hero: '/hero-monster/owl.png',      monster: '/hero-monster/hamster.png' },
   interpersonal:      { hero: '/hero-monster/capybara.png', monster: '/hero-monster/hedgehog.png' },
   family_origin:      { hero: '/hero-monster/deer.png',     monster: '/hero-monster/hermitcrab.png' },
