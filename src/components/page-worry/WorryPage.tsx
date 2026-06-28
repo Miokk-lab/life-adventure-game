@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
 import { Button, Card, Footer } from 'animal-island-ui';
 import { motion } from 'motion/react';
@@ -9,6 +9,7 @@ import { useTranslations } from '../../i18n';
 import { useLanguageStore } from '../../stores/useLanguageStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
 import { getOfflinePreset, VICTORY_VIDEO_MAP } from '../../data/presets';
+import { pauseAmbient, resumeAmbient } from '../../systems/soundEngine';
 
 const SPEECH_LANG: Record<string, string> = { zh: 'zh-CN', en: 'en-US', ja: 'ja-JP' };
 
@@ -30,6 +31,17 @@ export default function WorryPage() {
   const t = tr.worry;
   const wt = tr.worryTypes;
   const language = useLanguageStore((s) => s.language);
+
+  useEffect(() => {
+    if (isListening) {
+      pauseAmbient();
+    }
+    return () => {
+      if (isListening) {
+        resumeAmbient();
+      }
+    };
+  }, [isListening]);
 
   const radioOptions = worryTypeList.map((w) => ({ label: `${w.emoji} ${wt[w.key].label}`, value: w.key }));
 

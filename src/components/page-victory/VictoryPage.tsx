@@ -1,12 +1,38 @@
+import { useEffect } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
 import { Button, Card, Tabs, Title, Divider, Footer } from 'animal-island-ui';
 import { motion } from 'motion/react';
 import { useTranslations } from '../../i18n';
 import { VICTORY_VIDEO_MAP } from '../../data/presets';
+import { pauseAmbient, resumeAmbient } from '../../systems/soundEngine';
 
 export default function VictoryPage() {
   const navigateTo = useGameStore((s) => s.navigateTo);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const fsElement = document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).mozFullScreenElement || (document as any).msFullscreenElement;
+      if (fsElement && fsElement.tagName === 'VIDEO') {
+        pauseAmbient();
+      } else {
+        resumeAmbient();
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+      resumeAmbient();
+    };
+  }, []);
   const hero = useAdventureStore((s) => s.hero);
   const monster = useAdventureStore((s) => s.monster);
   const victoryText = useAdventureStore((s) => s.victoryText);
