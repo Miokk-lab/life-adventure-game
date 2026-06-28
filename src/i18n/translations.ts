@@ -169,6 +169,14 @@ export const translations = {
         campBtn: '🏕️ 静心营地',
         teaBtn: '🍵 花茶补给',
       },
+      logs: {
+        duelStart: '⚔️ {heroName} 与 {monsterName} 的对决开始了！',
+        playerUseSkill: '🦸 {heroName} 使用【{skillName}】！造成 {damage} 点伤害',
+        playerHeal: '💚 {heroName} 恢复了 {healAmount} 点生命',
+        monsterPurified: '🎉 {monsterName} 被净化了！',
+        enemyAttack: '👾 {monsterName} 发起攻击！造成 {damage} 点伤害',
+        energyDepleted: '💨 能量耗尽…需要在岛上积蓄力量再战！',
+      },
     },
     victory: {
       title: '心灵雨过天晴',
@@ -794,6 +802,14 @@ export const translations = {
         campBtn: '🏕️ Peaceful Camp',
         teaBtn: '🍵 Herbal Tea',
       },
+      logs: {
+        duelStart: '⚔️ The duel between {heroName} and {monsterName} has begun!',
+        playerUseSkill: '🦸 {heroName} used [{skillName}]! Dealing {damage} damage',
+        playerHeal: '💚 {heroName} recovered {healAmount} HP',
+        monsterPurified: '🎉 {monsterName} has been purified!',
+        enemyAttack: '👾 {monsterName} attacked! Dealing {damage} damage',
+        energyDepleted: '💨 Energy depleted... Need to accumulate power on the island to battle again!',
+      },
     },
     victory: {
       title: 'After the Storm',
@@ -1417,6 +1433,14 @@ export const translations = {
         campBody: '静かな休憩キャンプでHPを回復するか、お茶を飲んでから来よう！',
         campBtn: '🏕️ 静かなキャンプ',
         teaBtn: '🍵 ハーブティー',
+      },
+      logs: {
+        duelStart: '⚔️ {heroName} と {monsterName} の対決が始まった！',
+        playerUseSkill: '🦸 {heroName} は【{skillName}】を使った！{damage} ダメージを与えた',
+        playerHeal: '💚 {heroName} は HP を {healAmount} 回復した',
+        monsterPurified: '🎉 {monsterName} は浄化された！',
+        enemyAttack: '👾 {monsterName} の攻撃！{damage} ダメージを受けた',
+        energyDepleted: '💨 エネルギーが尽きた…島で力を蓄えてから再挑戦しよう！',
       },
     },
     victory: {

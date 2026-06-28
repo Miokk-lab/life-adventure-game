@@ -384,14 +384,27 @@ export default function BattlePage() {
           <Card className="h-full max-h-[600px] overflow-hidden flex flex-col">
             <h4 className="text-xs font-extrabold mb-2 shrink-0" style={{ color: '#9f927d' }}>{t.battleLog}</h4>
             <div className="flex-1 overflow-y-auto text-[10px] space-y-0.5 pr-1" style={{ color: '#725d42' }}>
-              {log.map(e => (
-                <p key={e.id} className="leading-relaxed">
-                  {e.type === 'player-action' && <span style={{ color: '#19c8b9' }}>🦸 </span>}
-                  {e.type === 'enemy-action' && <span style={{ color: '#e05a5a' }}>👾 </span>}
-                  {e.type === 'system' && <span style={{ color: '#6fba2c' }}>✨ </span>}
-                  {e.text}
-                </p>
-              ))}
+              {log.map(e => {
+                let displayTxt = e.text;
+                const logsTrans = (t as any).logs;
+                if (e.key && logsTrans && logsTrans[e.key]) {
+                  let template = logsTrans[e.key];
+                  if (e.params) {
+                    Object.entries(e.params).forEach(([k, v]) => {
+                      template = template.replace(`{${k}}`, String(v));
+                    });
+                  }
+                  displayTxt = template;
+                }
+                return (
+                  <p key={e.id} className="leading-relaxed">
+                    {e.type === 'player-action' && <span style={{ color: '#19c8b9' }}>🦸 </span>}
+                    {e.type === 'enemy-action' && <span style={{ color: '#e05a5a' }}>👾 </span>}
+                    {e.type === 'system' && <span style={{ color: '#6fba2c' }}>✨ </span>}
+                    {displayTxt}
+                  </p>
+                );
+              })}
             </div>
           </Card>
         </div>

@@ -103,6 +103,8 @@ export interface BattleLogEntry {
   id: string;
   text: string;
   type: 'player-action' | 'enemy-action' | 'system' | 'narrative';
+  key?: string;
+  params?: Record<string, string | number>;
 }
 
 // ── Tasks ──

@@ -24,8 +24,14 @@ interface BattleState {
   resetBattle: () => void;
 }
 
-function addLog(log: BattleLogEntry[], text: string, type: BattleLogEntry['type']): BattleLogEntry[] {
-  return [...log, { id: String(++logId), text, type }];
+function addLog(
+  log: BattleLogEntry[],
+  text: string,
+  type: BattleLogEntry['type'],
+  key?: string,
+  params?: Record<string, string | number>
+): BattleLogEntry[] {
+  return [...log, { id: String(++logId), text, type, key, params }];
 }
 
 export const useBattleStore = create<BattleState>((set, get) => ({
@@ -50,7 +56,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       monster: { name: monsterName, hp: monsterMaxHp, maxHp: monsterMaxHp, mp: 100, maxMp: 100, imageUrl: monsterImg },
       availableSkills: skills,
       selectedSkillId: null,
-      log: addLog([], `⚔️ ${heroName} 与 ${monsterName} 的对决开始了！`, 'system'),
+      log: addLog([], `⚔️ ${heroName} 与 ${monsterName} 的对决开始了！`, 'system', 'duelStart', { heroName, monsterName }),
       lastHeroAction: null,
       lastEnemyAction: null,
     });
@@ -68,12 +74,24 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     // Player action — apply damage
     const newMp = s.hero.mp - cost;
     const newMonsterHp = Math.max(0, s.monster.hp - skill.damage);
-    let newLog = addLog(s.log, `🦸 ${s.hero.name} 使用【${skill.name}】！造成 ${skill.damage} 点伤害`, 'player-action');
+    let newLog = addLog(
+      s.log,
+      `🦸 ${s.hero.name} 使用【${skill.name}】！造成 ${skill.damage} 点伤害`,
+      'player-action',
+      'playerUseSkill',
+      { heroName: s.hero.name, skillName: skill.name, damage: skill.damage }
+    );
 
     const updatedHero = { ...s.hero, mp: newMp };
     if (skill.healAmount > 0) {
       updatedHero.hp = Math.min(s.hero.maxHp, s.hero.hp + skill.healAmount);
-      newLog = addLog(newLog, `💚 ${s.hero.name} 恢复了 ${skill.healAmount} 点生命`, 'player-action');
+      newLog = addLog(
+        newLog,
+        `💚 ${s.hero.name} 恢复了 ${skill.healAmount} 点生命`,
+        'player-action',
+        'playerHeal',
+        { heroName: s.hero.name, healAmount: skill.healAmount }
+      );
     }
 
     // Check monster defeat
@@ -82,7 +100,13 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         hero: updatedHero,
         monster: { ...s.monster, hp: 0 },
         phase: 'victory',
-        log: addLog(newLog, `🎉 ${s.monster.name} 被净化了！`, 'system'),
+        log: addLog(
+          newLog,
+          `🎉 ${s.monster.name} 被净化了！`,
+          'system',
+          'monsterPurified',
+          { monsterName: s.monster.name }
+        ),
         selectedSkillId: null,
         lastHeroAction: { skillName: skill.name, damage: skill.damage },
         lastEnemyAction: null,
@@ -111,7 +135,13 @@ export const useBattleStore = create<BattleState>((set, get) => ({
       const variance = Math.floor(Math.random() * 8);
       const enemyDmg = baseDmg + variance;
       const newHeroHp = Math.max(0, state.hero.hp - enemyDmg);
-      let enemyLog = addLog(state.log, `👾 ${state.monster.name} 发起攻击！造成 ${enemyDmg} 点伤害`, 'enemy-action');
+      let enemyLog = addLog(
+        state.log,
+        `👾 ${state.monster.name} 发起攻击！造成 ${enemyDmg} 点伤害`,
+        'enemy-action',
+        'enemyAttack',
+        { monsterName: state.monster.name, damage: enemyDmg }
+      );
 
       // Scripted defeat
       if (state.isFirstBattle && state.turn >= 3 && newHeroHp <= 0) {
@@ -156,7 +186,16 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   advancePhase: () => {},
   forceNarrativeDefeat: () => {
     const s = get();
-    set({ hero: { ...s.hero, hp: 0, mp: 0 }, phase: 'defeat', log: addLog(s.log, '💨 能量耗尽…需要在岛上积蓄力量再战！', 'narrative') });
+    set({
+      hero: { ...s.hero, hp: 0, mp: 0 },
+      phase: 'defeat',
+      log: addLog(
+        s.log,
+        '💨 能量耗尽…需要在岛上积蓄力量再战！',
+        'narrative',
+        'energyDepleted'
+      ),
+    });
   },
   resetBattle: () => { logId = 0; set({ phase: 'intro', turn: 0, log: [], selectedSkillId: null, lastHeroAction: null, lastEnemyAction: null, isFirstBattle: false }); },
 }));
