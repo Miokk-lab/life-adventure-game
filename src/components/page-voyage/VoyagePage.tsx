@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
 import { useAdventureStore } from '../../stores/useAdventureStore';
 import { useLanguageStore } from '../../stores/useLanguageStore';
@@ -41,6 +41,15 @@ interface DataResponse {
 
 const API_URL = 'http://localhost:3001';
 
+const BackgroundLoading = memo(() => {
+  return (
+    <div className="absolute inset-0">
+      <Loading active={true} className="voyage-loading" style={{ position: 'absolute', inset: 0, height: '100%' }} />
+    </div>
+  );
+});
+BackgroundLoading.displayName = 'BackgroundLoading';
+
 export default function VoyagePage() {
   const worryText = useGameStore((s) => s.worryText);
   const worryType = useGameStore((s) => s.worryType);
@@ -49,6 +58,7 @@ export default function VoyagePage() {
   const setAdventureData = useAdventureStore((s) => s.setAdventureData);
   const setTasks = useAdventureStore((s) => s.setTasks);
   const saveTaskId = useAdventureStore((s) => s.setTaskId);
+  const storeTaskId = useAdventureStore((s) => s.taskId);
 
   const tr = useTranslations();
   const t = tr.voyage;
@@ -61,32 +71,50 @@ export default function VoyagePage() {
   const [detectedText, setDetectedText] = useState<{ heroName: string; monsterName: string } | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [offlineHeroName, setOfflineHeroName] = useState<string | null>(null);
+  const [isOfflineMode, setIsOfflineMode] = useState(storeTaskId === 'offline');
   const detectedTextSetRef = useRef(false);
 
   const phases = t.phases;
 
-  // Auto-cycle story phases every 7s while loading
+  // Helper to trigger offline/fallback state
+  const switchToOfflineFallback = () => {
+    const preset = getOfflinePreset('', worryType as WorryCategory, language);
+    setAdventureData({
+      worryType: worryType as WorryCategory,
+      hero: preset.hero,
+      monster: preset.monster,
+      cbtAnalysis: preset.cbtAnalysis,
+      victoryText: preset.victoryText,
+      victoryVideoUrl: VICTORY_VIDEO_MAP[worryType as string] || '',
+      battleSkills: preset.skills,
+    });
+    setTasks(preset.tasks);
+    saveTaskId('offline');
+    setIsOfflineMode(true);
+  };
+
+  // Auto-cycle story phases every 7s while loading (online mode only)
   useEffect(() => {
-    if (done) return;
+    if (done || isOfflineMode) return;
     const id = setInterval(() => {
       setPhaseIndex(i => (i >= phases.length - 2 ? 0 : i + 1));
     }, 7000);
     return () => clearInterval(id);
-  }, [done, phases.length]);
+  }, [done, phases.length, isOfflineMode]);
 
   // Smooth progress animation engine
   useEffect(() => {
     if (simulatingToward === null || progress >= simulatingToward) return;
     const timer = setTimeout(() => {
-      setProgress(p => parseFloat(Math.min(p + 0.4, simulatingToward as number).toFixed(1)));
+      const step = isOfflineMode ? 1.0 : 0.4;
+      setProgress(p => parseFloat(Math.min(p + step, simulatingToward as number).toFixed(1)));
     }, 120);
     return () => clearTimeout(timer);
-  }, [progress, simulatingToward]);
+  }, [progress, simulatingToward, isOfflineMode]);
 
-  // Step 1: Create adventure on mount / retry
+  // Step 1: Create adventure on mount / retry (online mode only)
   useEffect(() => {
-    if (!worryText || !worryType || taskId) return;
+    if (!worryText || !worryType || taskId || isOfflineMode) return;
 
     const createAdventure = async () => {
       try {
@@ -97,22 +125,22 @@ export default function VoyagePage() {
         });
         const data = await res.json();
         if (!res.ok || !data.task_id) {
-          setErrorMsg(data.error || t.errorModal.createFailed);
+          switchToOfflineFallback();
           return;
         }
         setTaskId(data.task_id);
         setSimulatingToward(65);
       } catch {
-        setErrorMsg(t.errorModal.networkFailed);
+        switchToOfflineFallback();
       }
     };
 
     createAdventure();
-  }, [worryText, worryType, taskId, retryCount]);
+  }, [worryText, worryType, taskId, retryCount, isOfflineMode]);
 
-  // Step 2: Poll status every 2s
+  // Step 2: Poll status every 2s (online mode only)
   useEffect(() => {
-    if (!taskId || done) return;
+    if (!taskId || done || isOfflineMode) return;
 
     const pollInterval = setInterval(async () => {
       try {
@@ -127,7 +155,7 @@ export default function VoyagePage() {
 
         if (status.status === 'error') {
           clearInterval(pollInterval);
-          setErrorMsg(status.error || t.errorModal.genFailed);
+          switchToOfflineFallback();
           return;
         }
 
@@ -200,12 +228,53 @@ export default function VoyagePage() {
         }
       } catch {
         clearInterval(pollInterval);
-        setErrorMsg(t.errorModal.networkFailed);
+        switchToOfflineFallback();
       }
     }, 2000);
 
     return () => clearInterval(pollInterval);
-  }, [taskId, done, setAdventureData, navigateTo, saveTaskId]);
+  }, [taskId, done, setAdventureData, navigateTo, saveTaskId, isOfflineMode, worryType, language, phases.length]);
+
+  // Step 3: Offline / Fallback Playback Flow
+  useEffect(() => {
+    if (!isOfflineMode || done) return;
+
+    setDone(false);
+    setErrorMsg(null);
+
+    const preset = getOfflinePreset('', worryType as WorryCategory, language);
+    const phaseDuration = 4000; // 4 seconds per phase
+
+    setPhaseIndex(0);
+    setSimulatingToward(25);
+
+    const interval = setInterval(() => {
+      setPhaseIndex(currentPhase => {
+        const nextPhase = currentPhase + 1;
+        if (nextPhase < phases.length - 1) {
+          setSimulatingToward((nextPhase + 1) * 25);
+          if (nextPhase === 1) {
+            setDetectedText({ heroName: preset.hero.name, monsterName: preset.monster.name });
+          }
+          return nextPhase;
+        } else {
+          clearInterval(interval);
+          setSimulatingToward(100);
+          setDetectedText({ heroName: preset.hero.name, monsterName: preset.monster.name });
+          setTimeout(() => {
+            setProgress(100);
+            setDone(true);
+            setTimeout(() => {
+              navigateTo('analysis');
+            }, 1500);
+          }, 1000);
+          return phases.length - 1;
+        }
+      });
+    }, phaseDuration);
+
+    return () => clearInterval(interval);
+  }, [isOfflineMode, phases.length, worryType, language, navigateTo]);
 
   const handleRetry = () => {
     detectedTextSetRef.current = false;
@@ -216,35 +285,16 @@ export default function VoyagePage() {
     setDone(false);
     setDetectedText(null);
     setRetryCount(c => c + 1);
+    setIsOfflineMode(false);
   };
 
   const handleGoOffline = () => {
-    const preset = getOfflinePreset('', worryType as WorryCategory, language);
-    setAdventureData({
-      worryType: worryType as WorryCategory,
-      hero: preset.hero,
-      monster: preset.monster,
-      cbtAnalysis: preset.cbtAnalysis,
-      victoryText: preset.victoryText,
-      victoryVideoUrl: VICTORY_VIDEO_MAP[worryType as string] || '',
-      battleSkills: preset.skills,
-    });
-    setTasks(preset.tasks);
-    setErrorMsg(null);
-    setOfflineHeroName(preset.hero.name);
-  };
-
-  const handleConfirmOffline = () => {
-    saveTaskId('offline');
-    setOfflineHeroName(null);
-    navigateTo('analysis');
+    switchToOfflineFallback();
   };
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      <div className="absolute inset-0">
-        <Loading key="voyage-loading" active={true} className="voyage-loading" style={{ position: 'absolute', inset: 0, height: '100%' }} />
-      </div>
+      <BackgroundLoading />
 
       <div className="relative z-10 w-full max-w-lg mx-auto px-4 text-center">
         <motion.div className="text-6xl mb-6"
@@ -287,24 +337,6 @@ export default function VoyagePage() {
               <Button type="default" onClick={handleRetry}>{t.errorModal.retry}</Button>
               <Button type="primary" onClick={handleGoOffline}>{t.errorModal.offline}</Button>
             </div>
-          </div>
-        </Modal>
-      )}
-
-      {/* Offline character confirmation modal */}
-      {offlineHeroName && (
-        <Modal open title={t.offlineModal.title} typewriter={false} onClose={() => {}} footer={null}>
-          <div className="text-center py-4">
-            <p className="text-4xl mb-3">🌟</p>
-            <p className="text-base font-extrabold mb-2" style={{ color: '#725d42' }}>
-              {t.offlineModal.heroCalled.replace('{hero}', offlineHeroName)}
-            </p>
-            <p className="text-sm mb-6" style={{ color: '#9f927d' }}>
-              {t.offlineModal.subtitle}
-            </p>
-            <Button type="primary" size="large" onClick={handleConfirmOffline}>
-              {t.offlineModal.startBtn}
-            </Button>
           </div>
         </Modal>
       )}

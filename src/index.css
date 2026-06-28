@@ -157,7 +157,7 @@ html, body, #root {
   transform-origin: bottom center;
 }
 .voyage-loading svg #tree {
-  animation: treeSway 3.3s ease-in-out infinite alternate;
+  animation: treeSway 1.65s ease-in-out infinite alternate;
   transform-box: fill-box;
   transform-origin: bottom center;
 }
@@ -168,7 +168,7 @@ html, body, #root {
   transform-origin: center bottom;
 }
 .voyage-loading svg > g:last-child {
-  animation: treeSway 4s ease-in-out infinite alternate;
+  animation: treeSway 2s ease-in-out infinite alternate;
   transform-box: fill-box;
   transform-origin: center bottom;
 }

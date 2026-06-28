@@ -186,7 +186,7 @@ export default function AnalysisPage() {
                 <div className="p-2 rounded-xl bg-[#E8F5E9]">
                   <p className="text-[10px] font-black" style={{ color: '#3A8D63' }}>{t.specialAbility}</p>
                   <p className="text-xs font-bold" style={{ color: '#2E7D32' }}>
-                    {hero?.story?.slice(0, 80) ?? t.unknownStory}
+                    {hero?.story ?? t.unknownStory}
                   </p>
                 </div>
                 <div className="p-2 rounded-xl border-2 border-dashed border-[#C4B89E]">

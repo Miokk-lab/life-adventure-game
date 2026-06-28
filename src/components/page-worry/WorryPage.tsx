@@ -92,7 +92,7 @@ export default function WorryPage() {
 
     setTimeout(() => {
       setIsSubmitting(false);
-      navigateTo('analysis');
+      navigateTo('voyage');
     }, 800);
   };
 
