@@ -28,7 +28,7 @@ export default function LetterWrite({ title, description, placeholder, onComplet
                 className="w-full bg-transparent resize-none text-sm leading-relaxed outline-none"
                 style={{ color: '#5D4037', fontFamily: '"Nunito", "Noto Sans SC", serif' }} />
             </div>
-            <p className="text-xs mb-3" style={{ color: '#c4b89e' }}>{text.length} 字</p>
+            <p className="text-xs mb-3" style={{ color: '#c4b89e' }}>{tr.charCount.replace('{count}', String(text.length))}</p>
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSend} disabled={!text.trim()}
               className="px-6 py-3 rounded-full text-white font-extrabold border-2 disabled:opacity-40"
               style={{ background: '#19c8b9', borderColor: '#11a89b', boxShadow: '0 4px 0 0 #11a89b' }}>

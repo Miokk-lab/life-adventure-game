@@ -79,6 +79,7 @@ export default function WorryPage() {
 
     const preset = getOfflinePreset(finalWorryText, category, language);
     setAdventureData({
+      worryType: category,
       hero: preset.hero,
       monster: preset.monster,
       cbtAnalysis: preset.cbtAnalysis,

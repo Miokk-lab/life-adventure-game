@@ -7,7 +7,7 @@ import { motion } from 'motion/react';
 import { Sword } from 'lucide-react';
 import ProgressBar from '../shared/ProgressBar';
 import FloatingText, { spawnFloatingText } from '../shared/FloatingText';
-import { playResolve, playHurt, playCollect } from '../../systems/soundEngine';
+import { playResolve, playHurt, playCollect, pauseAmbient, resumeAmbient } from '../../systems/soundEngine';
 import { VICTORY_VIDEO_MAP } from '../../data/presets';
 import { useTranslations } from '../../i18n';
 import { OnboardingTipManager } from '../onboarding';
@@ -20,6 +20,87 @@ const COPING_TACTIC_KEYS = [
   { key: 'transform', emoji: '🐍', mpCost: 20 },
 ];
 
+interface VictoryVideoPlayerProps {
+  effectiveVideoUrl: string;
+  worryType: string | null;
+  onEnded: () => void;
+  skipLabel: string;
+}
+
+function VictoryVideoPlayer({ effectiveVideoUrl, worryType, onEnded, skipLabel }: VictoryVideoPlayerProps) {
+  const [videoSrc, setVideoSrc] = useState(effectiveVideoUrl);
+  const [isMuted, setIsMuted] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    pauseAmbient();
+    return () => {
+      resumeAmbient();
+    };
+  }, []);
+
+  useEffect(() => {
+    setVideoSrc(effectiveVideoUrl);
+    setIsMuted(false);
+  }, [effectiveVideoUrl]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('Programmatic autoplay unmuted failed, falling back to muted:', err);
+          setIsMuted(true);
+        });
+      }
+    }
+  }, [videoSrc]);
+
+  useEffect(() => {
+    if (isMuted && videoRef.current) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.error('Programmatic autoplay muted also failed:', err);
+        });
+      }
+    }
+  }, [isMuted]);
+
+  const handleError = () => {
+    const fallback = VICTORY_VIDEO_MAP[worryType || ''] || '';
+    if (videoSrc !== fallback && fallback) {
+      console.warn(`Victory video failed to play (${videoSrc}), falling back to local: ${fallback}`);
+      setVideoSrc(fallback);
+      setIsMuted(false);
+    } else {
+      console.error('All victory video sources failed, proceeding...');
+      onEnded();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+      <video
+        ref={videoRef}
+        src={videoSrc}
+        autoPlay
+        muted={isMuted}
+        playsInline
+        className="w-full h-full object-cover"
+        onEnded={onEnded}
+        onError={handleError}
+      />
+      <button
+        onClick={onEnded}
+        className="absolute bottom-8 right-8 px-6 py-3 rounded-full font-extrabold text-white border-2 border-white/40 bg-black/40 hover:bg-black/60 transition-all"
+      >
+        {skipLabel}
+      </button>
+    </div>
+  );
+}
+
 export default function BattlePage() {
   const tr = useTranslations();
   const t = tr.battle;
@@ -30,7 +111,9 @@ export default function BattlePage() {
   }));
 
   const navigateTo = useGameStore((s) => s.navigateTo);
-  const worryType = useGameStore((s) => s.worryType);
+  const storeWorryType = useAdventureStore((s) => s.worryType);
+  const gameWorryType = useGameStore((s) => s.worryType);
+  const worryType = gameWorryType || storeWorryType;
   const heroData = useAdventureStore((s) => s.hero);
   const monsterData = useAdventureStore((s) => s.monster);
   const battleSkills = useAdventureStore((s) => s.battleSkills);
@@ -278,7 +361,7 @@ export default function BattlePage() {
                       </p>
                     )}
                     <p className="text-xs mt-2 font-bold" style={{ color: '#19c8b9' }}>
-                      {tacticDesc?.label} · MP {tacticDesc?.mpCost} {selectedSkill ? `· ⚔️ ${selectedSkill.damage || '?'} 伤害` : `— ${tacticDesc?.desc}`}
+                      {tacticDesc?.label} · MP {tacticDesc?.mpCost} {selectedSkill ? `· ⚔️ ${selectedSkill.damage || '?'} ${(t as any).damageLabel}` : `— ${tacticDesc?.desc}`}
                     </p>
                     {heroActor.mp < (COPING_TACTICS.find(ct=>ct.key===selectedCoping)?.mpCost ?? 99) && (
                       <p className="text-xs mt-1 font-bold animate-pulse" style={{ color: '#e05a5a' }}>{t.mpWarning}</p>
@@ -321,23 +404,12 @@ export default function BattlePage() {
         // Priority 1: video ready → fullscreen video (local fallback by category if AI url missing)
         if (effectiveVideoUrl) {
           return (
-            <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-              <video
-                src={effectiveVideoUrl}
-                autoPlay
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-                onEnded={handleProceed}
-                onError={handleProceed}
-              />
-              <button
-                onClick={handleProceed}
-                className="absolute bottom-8 right-8 px-6 py-3 rounded-full font-extrabold text-white border-2 border-white/40 bg-black/40 hover:bg-black/60 transition-all"
-              >
-                {t.skipVideo}
-              </button>
-            </div>
+            <VictoryVideoPlayer
+              effectiveVideoUrl={effectiveVideoUrl}
+              worryType={worryType}
+              onEnded={handleProceed}
+              skipLabel={t.skipVideo}
+            />
           );
         }
 

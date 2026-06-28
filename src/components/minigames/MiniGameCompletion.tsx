@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Check } from "lucide-react";
+import { useTranslations } from "../../i18n";
 
 interface MiniGameCompletionProps {
   emoji: string;
@@ -14,9 +15,12 @@ export default function MiniGameCompletion({
   emoji,
   title,
   description,
-  buttonLabel = "领取经验！",
+  buttonLabel,
   onComplete,
 }: MiniGameCompletionProps) {
+  const tr = useTranslations();
+  const finalButtonLabel = buttonLabel || tr.minigameDetails.defaultCompletionBtn;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -35,7 +39,7 @@ export default function MiniGameCompletion({
         className="px-10 py-3.5 bg-[#4CAF50] hover:bg-[#66BB6A] text-white font-black rounded-2xl border-4 border-[#725D42] shadow-[0_5px_0_0_#2E7D32] hover:translate-y-[1px] active:translate-y-[5px] active:shadow-none transition-all cursor-pointer flex items-center justify-center gap-2 mx-auto"
       >
         <Check size={18} />
-        <span>{buttonLabel}</span>
+        <span>{finalButtonLabel}</span>
       </button>
     </motion.div>
   );

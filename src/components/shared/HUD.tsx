@@ -2,6 +2,7 @@ import { useAdventureStore } from '../../stores/useAdventureStore';
 import { Wallet } from 'animal-island-ui';
 import ProgressBar from './ProgressBar';
 import { INITIAL_HP, INITIAL_MP, INITIAL_STAMINA } from '../../constants';
+import { useTranslations } from '../../i18n';
 
 export default function HUD() {
   const hp = useAdventureStore((s) => s.hp);
@@ -13,6 +14,7 @@ export default function HUD() {
   const coins = useAdventureStore((s) => s.coins);
   const exp = useAdventureStore((s) => s.exp);
   const chapter = useAdventureStore((s) => s.chapter);
+  const t = useTranslations().topbar;
 
   return (
     <div
@@ -26,18 +28,19 @@ export default function HUD() {
       <div className="max-w-4xl mx-auto flex items-center gap-4 flex-wrap">
         {/* HP */}
         <div className="flex-1 min-w-[120px]">
-          <ProgressBar value={hp} max={maxHp} colorClass="bar-hp" label="❤️ HP" />
+          <ProgressBar value={hp} max={maxHp} colorClass="bar-hp" label={`❤️ ${t.hpLabel}`} />
         </div>
 
         {/* MP / coping energy */}
         <div className="flex-1 min-w-[120px]">
-          <ProgressBar value={mp} max={maxMp} colorClass="bar-mp" label="💙 能量" />
+          <ProgressBar value={mp} max={maxMp} colorClass="bar-mp" label={`💙 ${t.mpLabel}`} />
         </div>
 
         {/* Stamina */}
         <div className="flex-1 min-w-[120px]">
-          <ProgressBar value={stamina} max={maxStamina} colorClass="bar-stamina" label="💚 体力" />
+          <ProgressBar value={stamina} max={maxStamina} colorClass="bar-stamina" label={`💚 ${t.staminaLabel}`} />
         </div>
+
 
         {/* EXP */}
         <div className="flex-1 min-w-[120px]">

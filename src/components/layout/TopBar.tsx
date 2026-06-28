@@ -26,7 +26,7 @@ export default function TopBar() {
       style={{ background: 'linear-gradient(180deg, rgba(255,253,244,0.98), rgba(248,248,240,0.94))', backdropFilter: 'blur(8px)', borderBottom: '4px solid #725D42' }}>
 
       {/* Avatar — click to logout — nickname above, level below */}
-      <button onClick={() => navigateTo('login')} title="退出登陆" className="shrink-0 flex flex-col items-center gap-0.5">
+      <button onClick={() => navigateTo('login')} title={t.logoutTitle} className="shrink-0 flex flex-col items-center gap-0.5">
         <span className="text-[9px] font-extrabold leading-tight truncate max-w-[60px]" style={{ color: '#725d42' }}>
           {user?.nickname || t.defaultNickname}
         </span>

@@ -85,6 +85,21 @@ export const worryTypeList: WorryTypeInfo[] = [
   },
 ];
 
-export function getWorryInfo(key: WorryCategory): WorryTypeInfo {
-  return worryTypeList.find(w => w.key === key) ?? worryTypeList[0];
+export function getLocalizedWorryTypeList(tr: any): WorryTypeInfo[] {
+  return worryTypeList.map(w => {
+    const loc = tr.worryTypes?.[w.key];
+    if (!loc) return w;
+    return {
+      ...w,
+      label: loc.label,
+      stampLabel: loc.stampLabel,
+      heroPreview: loc.heroPreview,
+      monsterPreview: loc.monsterPreview,
+    };
+  });
+}
+
+export function getWorryInfo(key: WorryCategory, tr?: any): WorryTypeInfo {
+  const list = tr ? getLocalizedWorryTypeList(tr) : worryTypeList;
+  return list.find(w => w.key === key) ?? list[0];
 }

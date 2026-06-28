@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Modal, Card, Button } from "animal-island-ui";
 import { playCollect, playClick, playResolve, playHurt } from "../../systems/soundEngine";
+import { useTranslations } from "../../i18n";
 import MiniGameCompletion from "./MiniGameCompletion";
 
 interface ShellCollectGameProps {
@@ -52,6 +53,9 @@ export default function ShellCollectGame({
   const [isFinished, setIsFinished] = useState(false);
   const target = Math.min(count, 5);
 
+  const tr = useTranslations();
+  const shellTr = tr.minigameDetails.shell;
+
   const handleCollectShell = (id: number) => {
     playCollect();
     setShells((prev) => prev.map((s) => (s.id === id ? { ...s, collected: true } : s)));
@@ -70,8 +74,8 @@ export default function ShellCollectGame({
         {!isFinished ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between text-xs font-bold">
-              <span>已收集: {collected}/{target}</span>
-              <span className="text-[#A08E75]">点击贝壳收集！</span>
+              <span>{shellTr.collected}: {collected}/{target}</span>
+              <span className="text-[#A08E75]">{shellTr.tip}</span>
             </div>
 
             {/* Beach area */}
@@ -110,9 +114,9 @@ export default function ShellCollectGame({
         ) : (
           <MiniGameCompletion
             emoji="🐚"
-            title="贝壳收集完成！"
-            description={`你成功收集了 ${target} 个贝壳！这些小胜利就是生活的基石。`}
-            buttonLabel="领取奖励！"
+            title={shellTr.successTitle}
+            description={shellTr.successDesc}
+            buttonLabel={shellTr.successBtn}
             onComplete={() => { playResolve(); onComplete(); }}
           />
         )}

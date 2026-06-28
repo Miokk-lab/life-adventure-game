@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { Modal } from 'animal-island-ui';
 import { motion } from 'motion/react';
 import { playResolve } from '../../systems/soundEngine';
+import { useTranslations } from '../../i18n';
 
 interface Props { title: string; description: string; themeText: string; duration?: number; onComplete: () => void; onClose: () => void; }
 
 export default function AutoTimer({ title, description, themeText, duration = 60, onComplete, onClose }: Props) {
+  const tr = useTranslations().templates;
   const [sec, setSec] = useState(duration);
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(false);
@@ -34,18 +36,18 @@ export default function AutoTimer({ title, description, themeText, duration = 60
             {!running ? (
               <button onClick={start} className="px-6 py-3 rounded-full text-white font-extrabold border-2 transition-all hover:scale-105"
                 style={{ background: '#6fba2c', borderColor: '#2E7D32', boxShadow: '0 4px 0 0 #2E7D32' }}>
-                ▶️ 开始 {duration}秒
+                {tr.timerStart.replace('{duration}', String(duration))}
               </button>
             ) : (
-              <p className="text-sm font-bold animate-pulse" style={{ color: '#9f927d' }}>自动倒计时中…</p>
+              <p className="text-sm font-bold animate-pulse" style={{ color: '#9f927d' }}>{tr.timerCounting}</p>
             )}
           </>
         ) : (
           <div className="text-center">
             <p className="text-2xl mb-2">✨</p>
-            <p className="text-lg font-extrabold" style={{ color: '#6fba2c' }}>完成！</p>
+            <p className="text-lg font-extrabold" style={{ color: '#6fba2c' }}>{tr.timerDone}</p>
             <button onClick={onComplete} className="mt-4 px-6 py-3 rounded-full text-white font-extrabold border-2 border-[#2E7D32]"
-              style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}>领取奖励 ✨</button>
+              style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}>{tr.rewardBtn}</button>
           </div>
         )}
       </div>

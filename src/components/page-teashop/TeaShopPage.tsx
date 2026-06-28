@@ -210,7 +210,7 @@ export default function TeaShopPage() {
           </motion.div>
           <p className="text-lg font-extrabold mb-2" style={{ color: '#725d42' }}>{brewed?.name}</p>
           <p className="text-xs mb-4" style={{ color: '#9f927d' }}>{brewed?.buffDescription}</p>
-          <p className="text-lg font-bold" style={{ color: '#6fba2c' }}>💚 体力 +{brewed?.staminaRestore}</p>
+          <p className="text-lg font-bold" style={{ color: '#6fba2c' }}>💚 {t.staminaLabel} +{brewed?.staminaRestore}</p>
           <div className="mt-4"><Button type="primary" onClick={() => setBrewed(null)}>{t.doneBtn}</Button></div>
         </div>
       </Modal>

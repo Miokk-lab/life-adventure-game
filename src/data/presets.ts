@@ -1,6 +1,7 @@
 import type { WorryCategory, HeroData, MonsterData, BattleSkill, DailyTask, SkillRef } from '../types';
 import { makeSkill } from './skills';
 import { generateDailyTasks } from './quests';
+import { translations } from '../i18n/translations';
 
 export const VICTORY_VIDEO_MAP: Record<string, string> = {
   work_stress:        '/vedio/work-stress.mp4',
@@ -349,10 +350,44 @@ export interface OfflinePreset {
 export function getOfflinePreset(worryText: string, worryType: WorryCategory, language = 'zh'): OfflinePreset {
   const preset = PRESETS[worryType] ?? PRESETS.emotion_management;
 
-  // Attach skill refs to hero
+  // Resolve language (fallback to 'zh')
+  const lang = (language === 'en' || language === 'ja' || language === 'zh') ? language : 'zh';
+  const tPreset = (translations[lang] as any)?.presets?.[worryType] ?? (translations[lang] as any)?.presets?.emotion_management;
+
+  // Localized fields with fallbacks
+  const heroName = tPreset?.hero?.name ?? preset.hero.name;
+  const heroStory = tPreset?.hero?.story ?? preset.hero.story;
+
+  const monsterName = tPreset?.monster?.name ?? preset.monster.name;
+  const monsterStory = tPreset?.monster?.story ?? preset.monster.story;
+  const monsterAttacks = tPreset?.monster?.attacks ?? preset.monster.attacks;
+
+  const cbtAnalysis = tPreset?.cbtAnalysis ?? preset.cbtAnalysis;
+  const victoryText = tPreset?.victoryText ?? preset.victoryText;
+
+  // Localize the skills array
+  const localizedSkills = preset.skills.map(skill => {
+    const tSkill = tPreset?.skills?.[skill.id];
+    return {
+      ...skill,
+      name: tSkill?.name ?? skill.name,
+      description: tSkill?.desc ?? skill.description,
+    };
+  });
+
+  // Attach localized skill refs to localized hero
   const heroWithSkills: HeroData = {
     ...preset.hero,
-    skills: refs(preset.skills),
+    name: heroName,
+    story: heroStory,
+    skills: refs(localizedSkills),
+  };
+
+  const localizedMonster: MonsterData = {
+    ...preset.monster,
+    name: monsterName,
+    story: monsterStory,
+    attacks: monsterAttacks,
   };
 
   // Generate daily tasks
@@ -360,10 +395,10 @@ export function getOfflinePreset(worryText: string, worryType: WorryCategory, la
 
   return {
     hero: heroWithSkills,
-    monster: preset.monster,
-    cbtAnalysis: preset.cbtAnalysis,
-    victoryText: preset.victoryText,
-    skills: preset.skills,
+    monster: localizedMonster,
+    cbtAnalysis,
+    victoryText,
+    skills: localizedSkills,
     tasks,
   };
 }

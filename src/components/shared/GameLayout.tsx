@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
-import { PAGES } from '../../constants';
+import { useTranslations } from '../../i18n';
 import HUD from './HUD';
 import PageTransition from './PageTransition';
 
@@ -12,7 +12,8 @@ interface Props {
 
 export default function GameLayout({ children, showHUD = false, className = '' }: Props) {
   const currentPage = useGameStore((s) => s.currentPage);
-  const pageInfo = PAGES[currentPage];
+  const tr = useTranslations();
+  const pageInfo = tr.pages[currentPage];
 
   return (
     <PageTransition className={className}>

@@ -3,6 +3,8 @@ import { motion } from "motion/react";
 import { Modal } from "animal-island-ui";
 import ItemIcon from "../shared/ItemIcon";
 import { playCollect, playClick, playResolve, playHurt } from "../../systems/soundEngine";
+import { useLanguageStore } from "../../stores/useLanguageStore";
+import { useTranslations } from "../../i18n";
 import MiniGameCompletion from "./MiniGameCompletion";
 
 interface SortingMiniGameProps {
@@ -20,26 +22,74 @@ export interface ClutterItem {
   description: string;
 }
 
-const DEFAULT_ITEMS: ClutterItem[] = [
-  {
-    id: "item_1",
-    text: "现实的大项目/大考/困难生活指标",
-    correctBasket: "external",
-    description: "这是属于「客观环境」，属于既定现实。不需要内耗或抱怨它，我们只需直面和接纳。"
-  },
-  {
-    id: "item_2",
-    text: "『我不能出一丝差错，否则就完蛋了』",
-    correctBasket: "burden",
-    description: "这是属于「严苛包袱」，代表不合理执念。我们要将其松手放下、释放出心房。"
-  },
-  {
-    id: "item_3",
-    text: "『立刻去给桌上的草盆浇水，写第一千零一行代码』",
-    correctBasket: "micro",
-    description: "这是属于「轻松小前行」，是一个5分钟内可瞬间开启的小胜利，立刻启动！"
-  }
-];
+const LOCALIZED_DEFAULT_ITEMS: Record<string, ClutterItem[]> = {
+  zh: [
+    {
+      id: "item_1",
+      text: "现实的大项目/大考/困难生活指标",
+      correctBasket: "external",
+      description: "这是属于「客观环境」，属于既定现实。不需要内耗或抱怨它，我们只需直面和接纳。"
+    },
+    {
+      id: "item_2",
+      text: "『我不能出一丝差错，否则就完蛋了』",
+      correctBasket: "burden",
+      description: "这是属于「严苛包袱」，代表不合理执念。我们要将其松手放下、释放出心房。"
+    },
+    {
+      id: "item_3",
+      text: "『立刻去给桌上的草盆浇水，写第一千零一行代码』",
+      correctBasket: "micro",
+      description: "这是属于「轻松小前行」，是一个5分钟内可瞬间开启的小胜利，立刻启动！"
+    }
+  ],
+  en: [
+    {
+      id: "item_1",
+      text: "Actual big project/major exam/difficult life metric",
+      correctBasket: "external",
+      description: "This belongs to the 'objective environment'—a given reality. No need to overthink or complain about it, we just need to face and accept it."
+    },
+    {
+      id: "item_2",
+      text: "『I must not make a single mistake, or it's all over』",
+      correctBasket: "burden",
+      description: "This belongs to 'harsh burdens'—representing irrational attachments. We need to let go and release them from our minds."
+    },
+    {
+      id: "item_3",
+      text: "『Immediately go water the potted plants on the desk, write the 1001st line of code』",
+      correctBasket: "micro",
+      description: "This belongs to 'easy small steps'—a minor victory that can be instantly started in 5 minutes. Start now!"
+    }
+  ],
+  ja: [
+    {
+      id: "item_1",
+      text: "現実の大きなプロジェクト/大事な試験/困難な生活の目標",
+      correctBasket: "external",
+      description: "これは「客観的な環境」であり、不変の現実です。不満を抱くのではなく、直視し、受け入れるだけで十分です。"
+    },
+    {
+      id: "item_2",
+      text: "「一瞬のミスも許されない、さもないとすべておしまいだ」",
+      correctBasket: "burden",
+      description: "これは「厳しいこだわり（執着）」であり、非合理的な思い込みです。執着を手放し、心から解放しましょう。"
+    },
+    {
+      id: "item_3",
+      text: "「今すぐ机の上の観葉植物に水をやる、1001行目のコードを書く」",
+      correctBasket: "micro",
+      description: "これは「小さな一歩」であり、5分以内にすぐに始められる小さな勝利です。今すぐ行動しましょう！"
+    }
+  ]
+};
+
+const BASKET_COLORS: Record<string, string> = {
+  external: "hover:bg-[#E2F1E7]",
+  burden: "hover:bg-[#FFEAEA]",
+  micro: "hover:bg-[#FFFDE0]"
+};
 
 export default function SortingMiniGame({
   taskTitle,
@@ -48,14 +98,20 @@ export default function SortingMiniGame({
   onComplete,
   onClose,
 }: SortingMiniGameProps) {
-  const initialItems = items && items.length > 0 ? items : DEFAULT_ITEMS;
+  const language = useLanguageStore((s) => s.language);
+  const tr = useTranslations();
+  const sortingTr = tr.minigameDetails.sorting;
+
+  const localizedDefault = LOCALIZED_DEFAULT_ITEMS[language] || LOCALIZED_DEFAULT_ITEMS.zh;
+  const initialItems = items && items.length > 0 ? items : localizedDefault;
+
   const [clutter] = useState<ClutterItem[]>(initialItems);
   const [selectedItemIdx, setSelectedItemIdx] = useState<number>(0);
   const [sortedCount, setSortedCount] = useState<number>(0);
   const [clutterStatus, setClutterStatus] = useState<Record<string, "unsorted" | "correct" | "wrong">>(
     () => Object.fromEntries(initialItems.map(i => [i.id, "unsorted" as const]))
   );
-  const [feedback, setFeedback] = useState<string>("点击下列竹蓝，给当前出现的混杂念头归类整理...");
+  const [feedback, setFeedback] = useState<string>(sortingTr.feedbackDefault);
 
   const handleSortItem = (basket: "external" | "burden" | "micro") => {
     if (selectedItemIdx >= clutter.length) return;
@@ -63,18 +119,18 @@ export default function SortingMiniGame({
     if (item.correctBasket === basket) {
       playCollect();
       setClutterStatus(prev => ({ ...prev, [item.id]: "correct" }));
-      setFeedback(`分类正确！ ${item.description}`);
+      setFeedback(`${sortingTr.feedbackCorrect} ${item.description}`);
       setSortedCount(c => c + 1);
       setTimeout(() => {
         setSelectedItemIdx(prev => prev + 1);
         if (selectedItemIdx + 1 < clutter.length) {
-          setFeedback("分类正确，请看下一个新心绪...");
+          setFeedback(sortingTr.feedbackNext);
         }
       }, 2500);
     } else {
       playHurt();
       setClutterStatus(prev => ({ ...prev, [item.id]: "wrong" }));
-      setFeedback("哎呀，这个归类可以让岛上更挤了噢... 试着再仔细读读。提示：客观指标只能直面，思维定式需要松开，能立马开始的是微小步子！");
+      setFeedback(sortingTr.feedbackWrong);
       setTimeout(() => {
         setClutterStatus(prev => ({ ...prev, [item.id]: "unsorted" }));
       }, 1500);
@@ -86,7 +142,7 @@ export default function SortingMiniGame({
   return (
     <Modal
       open={true}
-      title={`🧺 心灵木篮整理术 - 【${taskTitle}】`}
+      title={`🧺 ${sortingTr.title} - 【${taskTitle}】`}
       onClose={() => { if (!isFinished) { playHurt(); onClose(); } }}
       typewriter={false}
       footer={null}
@@ -101,7 +157,7 @@ export default function SortingMiniGame({
           <div className="space-y-6">
             <div className="bg-[#FAF7EC] border-2 border-[#725D42] rounded-2xl p-5 min-h-36 flex flex-col justify-center items-center shadow-inner relative overflow-hidden">
               <div className="absolute top-2 left-3 text-[10px] text-[#A08E75] font-bold">
-                当前待归类堆物: {selectedItemIdx + 1} / {clutter.length}
+                {sortingTr.progress}: {selectedItemIdx + 1} / {clutter.length}
               </div>
               {selectedItemIdx < clutter.length ? (
                 <motion.div
@@ -128,15 +184,11 @@ export default function SortingMiniGame({
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              {[
-                { type: "external", name: "竹篮 A", desc: "客观大环境 (接纳不纠结)", color: "hover:bg-[#E2F1E7]" },
-                { type: "burden", name: "竹篮 B", desc: "严苛执念 (原谅并卸载)", color: "hover:bg-[#FFEAEA]" },
-                { type: "micro", name: "竹篮 C", desc: "微小步子 (踩下油门做起)", color: "hover:bg-[#FFFDE0]" }
-              ].map((basket) => (
+              {sortingTr.baskets.map((basket: any) => (
                 <button
                   key={basket.type}
                   onClick={() => handleSortItem(basket.type as any)}
-                  className={`p-3 bg-white border-2 border-[#725D42] rounded-2xl flex flex-col items-center gap-1 shadow-[0_4px_0_0_#725D42] active:translate-y-[4px] active:shadow-none transition-all cursor-pointer ${basket.color}`}
+                  className={`p-3 bg-white border-2 border-[#725D42] rounded-2xl flex flex-col items-center gap-1 shadow-[0_4px_0_0_#725D42] active:translate-y-[4px] active:shadow-none transition-all cursor-pointer ${BASKET_COLORS[basket.type] || ""}`}
                 >
                   <div className="flex items-center gap-1">
                     <ItemIcon emoji="🧺" size={14} />
@@ -152,9 +204,9 @@ export default function SortingMiniGame({
         ) : (
           <MiniGameCompletion
             emoji="🌾"
-            title="杂乱归类，心灵清新！"
-            description="干得太漂亮了！你成功理清了什么属于外界环境压力，什么属于自我执念。分类之后，你会发现要应对的事情清清爽爽！专属任务打卡成功！"
-            buttonLabel="给小岛施肥并领取多巴胺经验！"
+            title={sortingTr.successTitle}
+            description={sortingTr.successDesc}
+            buttonLabel={sortingTr.successBtn}
             onComplete={() => { playResolve(); onComplete(); }}
           />
         )}

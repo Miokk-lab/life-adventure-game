@@ -1,4 +1,5 @@
 import { Card } from 'animal-island-ui';
+import { useTranslations } from '../../i18n';
 
 interface Props {
   name: string;
@@ -30,6 +31,7 @@ export default function CharacterCard({
   className = '',
 }: Props) {
   const cardColor = CARD_COLORS[color] ?? 'app-teal';
+  const t = useTranslations().battle;
 
   return (
     <Card color={cardColor} className={`text-center ${className}`}>
@@ -72,7 +74,7 @@ export default function CharacterCard({
       {details && details.length > 0 && (
         <div className="mt-3 pt-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
           <p className="text-xs font-bold mb-1" style={{ color: '#fff9e3' }}>
-            技能/攻击
+            {(t as any).skillAttackLabel}
           </p>
           <ul className="text-xs text-left list-disc list-inside" style={{ color: '#725d42' }}>
             {details.map((d, i) => (

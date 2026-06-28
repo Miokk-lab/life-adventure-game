@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Modal } from 'animal-island-ui';
 import { motion } from 'motion/react';
 import { playCollect, playResolve } from '../../systems/soundEngine';
+import { useTranslations } from '../../i18n';
 
 interface Props { title: string; description: string; themeText: string; sipCount?: number; onComplete: () => void; onClose: () => void; }
 
 export default function WaterDrink({ title, description, themeText, sipCount = 5, onComplete, onClose }: Props) {
+  const tr = useTranslations().templates;
   const [sips, setSips] = useState(0);
   const done = sips >= sipCount;
 
@@ -23,19 +25,19 @@ export default function WaterDrink({ title, description, themeText, sipCount = 5
             style={{ background: 'linear-gradient(180deg, #7ab8f5, #5b9bd5)', transition: 'height 0.3s' }} />
         </div>
         <p className="text-lg font-extrabold mb-4" style={{ color: '#5b9bd5' }}>
-          {done ? '🎉 喝完啦！' : `${sips}/${sipCount} 口`}
+          {done ? tr.waterFinished : tr.waterSips.replace('{sips}', String(sips)).replace('{total}', String(sipCount))}
         </p>
         {!done ? (
           <button onClick={handleSip}
             className="px-6 py-3 rounded-full text-white font-extrabold border-2 transition-all hover:scale-105 active:scale-95"
             style={{ background: '#5b9bd5', borderColor: '#3b7bc5', boxShadow: '0 4px 0 0 #3b7bc5' }}>
-            🥤 喝一口
+            {tr.waterSipBtn}
           </button>
         ) : (
           <button onClick={() => { playResolve(); onComplete(); }}
             className="px-6 py-3 rounded-full text-white font-extrabold border-2 border-[#2E7D32]"
             style={{ background: '#6fba2c', boxShadow: '0 4px 0 0 #2E7D32' }}>
-            ✅ 完成！领取奖励
+            {tr.rewardBtn}
           </button>
         )}
       </div>

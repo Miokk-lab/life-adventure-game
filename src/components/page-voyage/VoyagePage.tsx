@@ -168,6 +168,7 @@ export default function VoyagePage() {
               : preset.tasks;
 
             setAdventureData({
+              worryType: worryType as WorryCategory,
               hero: {
                 name: preset.hero.name,
                 story: data.data.heroStory,
@@ -220,6 +221,7 @@ export default function VoyagePage() {
   const handleGoOffline = () => {
     const preset = getOfflinePreset('', worryType as WorryCategory, language);
     setAdventureData({
+      worryType: worryType as WorryCategory,
       hero: preset.hero,
       monster: preset.monster,
       cbtAnalysis: preset.cbtAnalysis,

@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Modal } from 'animal-island-ui';
 import { motion } from 'motion/react';
 import { playResolve } from '../../systems/soundEngine';
+import { useTranslations } from '../../i18n';
 
 interface Props { title: string; description: string; petals: string[]; onComplete: () => void; onClose: () => void; }
 
 export default function GratitudePetals({ title, description, petals, onComplete, onClose }: Props) {
+  const tr = useTranslations().templates;
   const [texts, setTexts] = useState<string[]>(new Array(petals.length).fill(''));
   const done = texts.every(t => t.trim().length > 0);
 
@@ -28,7 +30,7 @@ export default function GratitudePetals({ title, description, petals, onComplete
         <button onClick={() => { playResolve(); onComplete(); }} disabled={!done}
           className="px-6 py-3 rounded-full text-white font-extrabold border-2 disabled:opacity-40 transition-all"
           style={{ background: '#f5c31c', borderColor: '#dba90e', boxShadow: '0 4px 0 0 #dba90e' }}>
-          💛 记录完毕
+          {tr.gratitudeDoneBtn}
         </button>
       </div>
     </Modal>

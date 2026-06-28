@@ -141,6 +141,18 @@ export function stopAmbient() {
   }
 }
 
+export function pauseAmbient() {
+  if (bgmAudio) {
+    bgmAudio.pause();
+  }
+}
+
+export function resumeAmbient() {
+  if (bgmAudio && !isMuted) {
+    playWithRetry(bgmAudio);
+  }
+}
+
 export function playCollect() {
   note(880, getCtx().currentTime, 0.12, 0.05);
 }

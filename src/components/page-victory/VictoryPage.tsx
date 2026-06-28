@@ -3,6 +3,7 @@ import { useAdventureStore } from '../../stores/useAdventureStore';
 import { Button, Card, Tabs, Title, Divider, Footer } from 'animal-island-ui';
 import { motion } from 'motion/react';
 import { useTranslations } from '../../i18n';
+import { VICTORY_VIDEO_MAP } from '../../data/presets';
 
 export default function VictoryPage() {
   const navigateTo = useGameStore((s) => s.navigateTo);
@@ -10,6 +11,10 @@ export default function VictoryPage() {
   const monster = useAdventureStore((s) => s.monster);
   const victoryText = useAdventureStore((s) => s.victoryText);
   const victoryVideoUrl = useAdventureStore((s) => s.victoryVideoUrl);
+  const storeWorryType = useAdventureStore((s) => s.worryType);
+  const gameWorryType = useGameStore((s) => s.worryType);
+  const worryType = gameWorryType || storeWorryType;
+  const effectiveVideoUrl = victoryVideoUrl || VICTORY_VIDEO_MAP[worryType || ''] || '';
   const chapter = useAdventureStore((s) => s.chapter);
   const exp = useAdventureStore((s) => s.exp);
   const reset = useAdventureStore((s) => s.reset);
@@ -84,12 +89,12 @@ export default function VictoryPage() {
         </div>
       </motion.div>
 
-      {victoryVideoUrl && (
+      {effectiveVideoUrl && (
         <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="mb-8">
           <Card className="rounded-[32px] p-4 shadow-[0_8px_0_0_#C4B89E] border-4 border-[#725D42]">
             <div className="relative w-full rounded-2xl overflow-hidden bg-black">
               <video
-                src={victoryVideoUrl}
+                src={effectiveVideoUrl}
                 autoPlay
                 muted
                 controls

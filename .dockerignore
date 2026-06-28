@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+node_modules
+dist
+dist-server
+*.md
+public/vedio
+server/adk_agents
+ADK_Game_Agents_Guide.md
+BROCHURE_*.md
+Convert_Game_Agents_to_ADK.md
+task_plan.md
+findings.md
+progress.md
+

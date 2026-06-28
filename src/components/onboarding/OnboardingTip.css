@@ -1,0 +1,390 @@
+/* ===== 一级提示（Primary） ===== */
+.onboarding-tip-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.onboarding-tip-primary {
+  background: linear-gradient(135deg, #f8f8f0 0%, #e8f8f4 100%);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.onboarding-tip-primary .tip-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.onboarding-tip-primary .tip-icon {
+  font-size: 28px;
+  display: inline-block;
+}
+
+.onboarding-tip-primary .tip-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d5a4e;
+}
+
+.onboarding-tip-primary .tip-content {
+  margin-bottom: 24px;
+  color: #404040;
+  line-height: 1.6;
+}
+
+.onboarding-tip-primary .tip-content p {
+  margin: 0 0 12px 0;
+}
+
+.onboarding-tip-primary .tip-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.onboarding-tip-primary .btn-primary,
+.onboarding-tip-primary .btn-secondary {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.onboarding-tip-primary .btn-primary {
+  background: #19c8b9;
+  color: white;
+}
+
+.onboarding-tip-primary .btn-primary:hover {
+  background: #16b5a8;
+  transform: translateY(-2px);
+}
+
+.onboarding-tip-primary .btn-secondary {
+  background: rgba(25, 200, 185, 0.1);
+  color: #19c8b9;
+}
+
+.onboarding-tip-primary .btn-secondary:hover {
+  background: rgba(25, 200, 185, 0.2);
+}
+
+/* ===== 二级提示（Secondary） ===== */
+.onboarding-tip-secondary {
+  position: absolute;
+  background: #ffffff;
+  border: 2px solid #19c8b9;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 240px;
+  max-width: 320px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.onboarding-tip-secondary .tip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.onboarding-tip-secondary .tip-icon {
+  font-size: 20px;
+}
+
+.onboarding-tip-secondary .tip-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d5a4e;
+}
+
+.onboarding-tip-secondary .tip-content {
+  margin-bottom: 12px;
+  color: #404040;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.onboarding-tip-secondary .tip-content p {
+  margin: 0;
+}
+
+.onboarding-tip-secondary .btn-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.onboarding-tip-secondary .btn-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+/* 箭头 */
+.onboarding-tip-secondary .tip-arrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  border: 2px solid #19c8b9;
+  transform: rotate(45deg);
+}
+
+.onboarding-tip-secondary.position-top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+}
+
+.onboarding-tip-secondary.position-top .tip-arrow {
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  border-top: none;
+  border-left: none;
+}
+
+.onboarding-tip-secondary.position-bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+}
+
+.onboarding-tip-secondary.position-bottom .tip-arrow {
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  border-bottom: none;
+  border-right: none;
+}
+
+.onboarding-tip-secondary.position-left {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-12px);
+}
+
+.onboarding-tip-secondary.position-left .tip-arrow {
+  left: auto;
+  right: -7px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  border-right: none;
+  border-bottom: none;
+}
+
+.onboarding-tip-secondary.position-right {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(12px);
+}
+
+.onboarding-tip-secondary.position-right .tip-arrow {
+  left: -7px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  border-left: none;
+  border-top: none;
+}
+
+/* ===== 三级提示（Tertiary） ===== */
+.onboarding-tip-tertiary {
+  position: relative;
+  display: inline-block;
+}
+
+.onboarding-tip-tertiary .tip-trigger {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(25, 200, 185, 0.15);
+  border: 1.5px solid #19c8b9;
+  color: #19c8b9;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-left: 4px;
+}
+
+.onboarding-tip-tertiary .tip-trigger:hover {
+  background: rgba(25, 200, 185, 0.25);
+  transform: scale(1.1);
+}
+
+.onboarding-tip-tertiary .tip-popover {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 280px;
+  max-width: 320px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  animation: popIn 0.2s ease-out;
+}
+
+.onboarding-tip-tertiary .tip-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.onboarding-tip-tertiary .tip-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.onboarding-tip-tertiary .tip-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2d5a4e;
+  flex: 1;
+}
+
+.onboarding-tip-tertiary .btn-close {
+  position: absolute;
+  top: -4px;
+  right: 0;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.onboarding-tip-tertiary .btn-close:hover {
+  color: #333;
+}
+
+.onboarding-tip-tertiary .tip-content {
+  margin-bottom: 8px;
+  color: #404040;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.onboarding-tip-tertiary .tip-content p {
+  margin: 0 0 6px 0;
+}
+
+.onboarding-tip-tertiary .tip-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.onboarding-tip-tertiary .btn-secondary {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(25, 200, 185, 0.1);
+  color: #19c8b9;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.onboarding-tip-tertiary .btn-secondary:hover {
+  background: rgba(25, 200, 185, 0.2);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .onboarding-tip-primary {
+    max-width: calc(100vw - 32px);
+    padding: 24px;
+  }
+
+  .onboarding-tip-secondary {
+    max-width: calc(100vw - 32px);
+  }
+
+  .onboarding-tip-tertiary .tip-popover {
+    max-width: calc(100vw - 32px);
+  }
+}

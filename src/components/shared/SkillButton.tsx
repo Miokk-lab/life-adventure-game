@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { Tooltip } from 'animal-island-ui';
 import type { BattleSkill } from '../../types';
+import { useTranslations } from '../../i18n';
 
 interface Props {
   skill: BattleSkill;
@@ -17,14 +18,8 @@ const ANIMAL_EMOJI: Record<string, string> = {
   snake: '🐍',
 };
 
-const ANIMAL_NAMES: Record<string, string> = {
-  turtle: '乌龟·接纳',
-  sloth: '树懒·正念',
-  tiger: '老虎·行动',
-  snake: '灵蛇·重构',
-};
-
 export default function SkillButton({ skill, isSelected, mpAvailable, chapter, onClick }: Props) {
+  const t = useTranslations().battle;
   const canUse = mpAvailable >= skill.mpCost && skill.level <= chapter;
   const emoji = ANIMAL_EMOJI[skill.animal] ?? '✨';
 
@@ -45,7 +40,7 @@ export default function SkillButton({ skill, isSelected, mpAvailable, chapter, o
         <div className="flex items-center gap-2 mb-1">
           <span className="text-lg">{emoji}</span>
           <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#e8e2d6', color: '#725d42' }}>
-            {ANIMAL_NAMES[skill.animal] ?? skill.animal}
+            {(t as any).animalNames?.[skill.animal] ?? skill.animal}
           </span>
           <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#e6f9f6', color: '#19c8b9' }}>
             Lv{skill.level}
@@ -65,7 +60,7 @@ export default function SkillButton({ skill, isSelected, mpAvailable, chapter, o
         {!canUse && skill.level > chapter && (
           <div className="absolute inset-0 flex items-center justify-center rounded-2xl" style={{ background: 'rgba(248,248,240,0.6)' }}>
             <span className="text-xs font-bold" style={{ color: '#c4b89e' }}>
-              🔒 第{skill.level}章解锁
+              🔒 {(t as any).levelLock.replace('{level}', String(skill.level))}
             </span>
           </div>
         )}

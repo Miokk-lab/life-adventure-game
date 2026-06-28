@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { X } from "lucide-react";
 import { Modal } from "animal-island-ui";
 import { playCollect, playClick, playResolve, playHurt } from "../../systems/soundEngine";
+import { useTranslations } from "../../i18n";
 import MiniGameCompletion from "./MiniGameCompletion";
 
 interface BreathingMiniGameProps {
@@ -24,6 +25,9 @@ export default function BreathingMiniGame({
   const [secondsLeft, setSecondsLeft] = useState(4);
   const [cyclesCompleted, setCyclesCompleted] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+
+  const tr = useTranslations();
+  const breathingTr = tr.minigameDetails.breathing;
 
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
@@ -88,7 +92,7 @@ export default function BreathingMiniGame({
   return (
     <Modal
       open={true}
-      title={`🍃 呼吸减压法环 - 【${taskTitle}】`}
+      title={`🍃 ${breathingTr.title} - 【${taskTitle}】`}
       onClose={() => { playHurt(); onClose(); }}
       typewriter={false}
       footer={null}
@@ -114,10 +118,7 @@ export default function BreathingMiniGame({
               >
                 <div className="text-center">
                   <span className="text-[10px] font-black tracking-widest text-[#725D42] uppercase block">
-                    {phase === "inhale" && "🌬️ 吸气"}
-                    {phase === "hold" && "🧘 屏息"}
-                    {phase === "exhale" && "🍃 呼气"}
-                    {phase === "rest" && "🧸 休整"}
+                    {breathingTr.phases[phase]}
                   </span>
                   <span className="text-3xl font-black text-[#5D4037] font-mono block">
                     {secondsLeft}s
@@ -127,7 +128,7 @@ export default function BreathingMiniGame({
             </div>
 
             <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="text-xs font-bold text-[#A08E75]">能量循环:</span>
+              <span className="text-xs font-bold text-[#A08E75]">{breathingTr.cyclesLabel}:</span>
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
@@ -140,18 +141,15 @@ export default function BreathingMiniGame({
               ))}
             </div>
             <p className="text-xs text-[#725D42] font-semibold italic mt-1">
-              {phase === "inhale" && "缓缓吸气，感觉新鲜松木的气息流遍全身..."}
-              {phase === "hold" && "聚拢平静的思绪，让浮躁在心中彻底落地..."}
-              {phase === "exhale" && "慢慢吐出浊气，放走焦虑的负荷..."}
-              {phase === "rest" && "小岛的树叶随你微微摇曳..."}
+              {breathingTr.phaseTips[phase]}
             </p>
           </div>
         ) : (
           <MiniGameCompletion
             emoji="🎁"
-            title="呼吸调节大成功！"
-            description="你顺利完成了 3 轮正念呼吸交割。现实中的焦躁已被缓缓平抚，专属任务打卡成功！"
-            buttonLabel="给小岛灌溉并领取经验！"
+            title={breathingTr.successTitle}
+            description={breathingTr.successDesc}
+            buttonLabel={breathingTr.successBtn}
             onComplete={() => { playResolve(); onComplete(); }}
           />
         )}

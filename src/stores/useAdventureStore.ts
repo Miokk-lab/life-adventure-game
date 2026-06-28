@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { HeroData, MonsterData, Companion, GalleryItem, DailyTask } from '../types';
+import type { HeroData, MonsterData, Companion, GalleryItem, DailyTask, WorryCategory } from '../types';
 import { INITIAL_STAMINA, INITIAL_COINS, INITIAL_HP, INITIAL_MP, TASK_MP_RESTORE, TASK_EXP, TASK_COINS, TASK_STAMINA_COST, EXP_L1, EXP_L2 } from '../constants';
 
 interface AdventureState {
   adventureId: string | null;
   taskId: string | null;
+  worryType: WorryCategory | null;
   hero: HeroData | null;
   monster: MonsterData | null;
   cbtAnalysis: string | null;
@@ -39,6 +40,7 @@ interface AdventureState {
 
   setAdventureData: (data: {
     adventureId?: string;
+    worryType?: WorryCategory;
     hero: HeroData;
     monster: MonsterData;
     cbtAnalysis: string;
@@ -72,6 +74,7 @@ interface AdventureState {
 const initialState = {
   adventureId: null,
   taskId: null,
+  worryType: null,
   hero: null,
   monster: null,
   cbtAnalysis: null,
@@ -111,6 +114,7 @@ export const useAdventureStore = create<AdventureState>()(
   setAdventureData: (data) =>
     set({
       adventureId: data.adventureId ?? get().adventureId,
+      worryType: data.worryType ?? get().worryType,
       hero: data.hero,
       monster: data.monster,
       cbtAnalysis: data.cbtAnalysis,
