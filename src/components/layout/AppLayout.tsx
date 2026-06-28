@@ -18,8 +18,20 @@ export default function AppLayout({
   showSidebar = false,
   className = '',
 }: Props) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 768 : false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   const currentPage = useGameStore((s) => s.currentPage);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setSidebarOpen(!mobile);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     setPageAmbient(currentPage);
@@ -47,7 +59,7 @@ export default function AppLayout({
         <main
           className={`flex-1 transition-all duration-300 w-full ${className}`}
           style={{
-            marginLeft: showSidebar && sidebarOpen ? 192 : 0,
+            marginLeft: showSidebar && sidebarOpen && !isMobile ? 192 : 0,
           }}
         >
           <motion.div

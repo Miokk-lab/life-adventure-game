@@ -74,7 +74,7 @@ export default function TasksPage() {
       {tasks.length === 0 ? (
         <Card className="text-center py-8"><p className="text-sm" style={{ color: '#c4b89e' }}>{t.loading}</p></Card>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {tasks.map((task) => (
             <Card key={task.id} color={task.completed ? 'app-teal' : 'default'}>
               <Collapse question={<span className={task.completed?'line-through opacity-60':''}>{task.completed?'✅':'⬜'} {task.description}</span>}

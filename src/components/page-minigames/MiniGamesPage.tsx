@@ -72,7 +72,7 @@ export default function MiniGamesPage() {
         <p className="text-sm" style={{ color: '#c4b89e' }}>{t.pageSubtitle}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {games.map((game) => (
           <motion.div key={game.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Card color="app-yellow" className="cursor-pointer text-center" onClick={() => handlePlay(game)}>
