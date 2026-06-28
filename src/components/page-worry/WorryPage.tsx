@@ -20,6 +20,7 @@ export default function WorryPage() {
   const setAdventureData = useAdventureStore((s) => s.setAdventureData);
   const setTasks = useAdventureStore((s) => s.setTasks);
   const saveTaskId = useAdventureStore((s) => s.setTaskId);
+  const resetAdventure = useAdventureStore((s) => s.resetAdventure);
 
   const [text, setText] = useState('');
   const [category, setCategory] = useState<WorryCategory>('work_stress');
@@ -78,6 +79,7 @@ export default function WorryPage() {
   const handleSubmit = () => {
     if (!text.trim()) return;
     setIsSubmitting(true);
+    resetAdventure();
     setWorryText(text.trim());
     setWorryType(category);
     setTimeout(() => { setIsSubmitting(false); navigateTo('voyage'); }, 800);
@@ -85,6 +87,7 @@ export default function WorryPage() {
 
   const handleOfflineSubmit = () => {
     const finalWorryText = text.trim() || wt[category]?.label || 'Offline Play';
+    resetAdventure();
     setWorryText(finalWorryText);
     setWorryType(category);
     setIsSubmitting(true);

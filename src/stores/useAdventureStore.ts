@@ -48,7 +48,7 @@ interface AdventureState {
     victoryVideoUrl: string;
     battleSkills?: import('../types').BattleSkill[];
   }) => void;
-  setTaskId: (id: string) => void;
+  setTaskId: (id: string | null) => void;
   setVictoryImageUrl: (url: string) => void;
   setVictoryVideoUrl: (url: string) => void;
   setMonsterHp: (hp: number | null) => void;
@@ -68,6 +68,7 @@ interface AdventureState {
   incrementWeeklyTask: () => void;
   showLevelUp: boolean;
   dismissLevelUp: () => void;
+  resetAdventure: () => void;
   reset: () => void;
 }
 
@@ -200,6 +201,21 @@ export const useAdventureStore = create<AdventureState>()(
     })),
 
   dismissLevelUp: () => set({ showLevelUp: false }),
+  resetAdventure: () =>
+    set({
+      adventureId: null,
+      taskId: null,
+      worryType: null,
+      hero: null,
+      monster: null,
+      cbtAnalysis: null,
+      victoryText: null,
+      victoryVideoUrl: null,
+      victoryImageUrl: null,
+      monsterHp: null,
+      tasks: [],
+      battleSkills: [],
+    }),
   reset: () => set(initialState),
     }),
     {
